@@ -75,7 +75,7 @@ export function Header() {
             <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
               <Globe className="w-6 h-6 text-primary-foreground" />
             </div>
-            <h1 className="font-bold text-foreground text-left text-2xl">MUN KZ   </h1>
+            <h1 className="text-xl md:text-2xl font-bold text-foreground">MUNX NIS</h1>
           </Link>
 
           <nav className="hidden md:flex items-center gap-6">
