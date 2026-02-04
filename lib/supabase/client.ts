@@ -1,7 +1,11 @@
-import { createBrowserClient } from "@supabase/ssr"
+import { createBrowserClient as createSupabaseBrowserClient } from "@supabase/ssr"
 
 export function createClient() {
-  return createBrowserClient(process.env.https://vodtmdduljajlgybzxep.supabase.co!, process.env.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZvZHRtZGR1bGphamxneWJ6eGVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk3NDk4MDksImV4cCI6MjA3NTMyNTgwOX0.eIm4LxJGDGZQhQwWNrPtkOiSfnhT6mGKzITznJa9zvY!)
+  return createSupabaseBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
 }
 
-export { createClient as createBrowserClient }
+// Alias for backward compatibility
+export const createBrowserClient = createClient
