@@ -28,7 +28,27 @@ export async function updateSession(request: NextRequest) {
 
     const {
       data: { user },
+      error,
     } = await supabase.auth.getUser()
+
+    // If session is invalid/stale, clear auth cookies and treat as logged out
+    if (error) {
+      // Clear all supabase auth cookies to remove stale session
+      const response = NextResponse.next({ request })
+      request.cookies.getAll().forEach((cookie) => {
+        if (cookie.name.startsWith("sb-")) {
+          response.cookies.delete(cookie.name)
+        }
+      })
+
+      if (request.nextUrl.pathname.startsWith("/dashboard")) {
+        const url = request.nextUrl.clone()
+        url.pathname = "/auth/login"
+        return NextResponse.redirect(url)
+      }
+
+      return response
+    }
 
     // Protect /dashboard route - redirect to login if not authenticated
     if (request.nextUrl.pathname.startsWith("/dashboard") && !user) {
@@ -47,8 +67,14 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(url)
     }
   } catch (error) {
-    // The auth state will be checked client-side as fallback
-    console.error("[v0] Middleware auth check failed:", error)
+    // Clear stale cookies on any unexpected error
+    const response = NextResponse.next({ request })
+    request.cookies.getAll().forEach((cookie) => {
+      if (cookie.name.startsWith("sb-")) {
+        response.cookies.delete(cookie.name)
+      }
+    })
+    return response
   }
 
   return supabaseResponse

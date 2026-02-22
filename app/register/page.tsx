@@ -218,9 +218,8 @@ export default function RegisterPage() {
     "taldykorgan",
     "turkestan",
     "uralsk",
-    "ust_kamengorsk",
+    "ust_kamenogorsk",
     "semey",
-    "other_school",
   ]
 
   return (
