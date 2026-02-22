@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
-import { validateVerificationCode, isFounder, type UserRole } from "@/lib/roles"
+import { isFounder, type UserRole } from "@/lib/roles"
 
 export async function loginAction(email: string, password: string) {
   try {
@@ -27,28 +27,12 @@ export async function signUpAction(
   password: string,
   fullName: string,
   phone: string,
-  role: string,
-  verificationCode: string,
 ) {
   try {
     const supabase = await createClient()
-    let actualRole: UserRole = role as UserRole
-    let schoolId: number | null = null
-    let secretaryType: "general" | "deputy" | null = null
 
-    // Improved Founder/Role Logic
-    if (isFounder(email)) {
-      actualRole = "founder"
-    } else if (["admin", "general_secretary", "deputy"].includes(role)) {
-      const validation = validateVerificationCode(verificationCode)
-      // Check if code is valid AND corresponds to the selected role
-      if (!validation.valid || validation.role !== role) {
-        return { success: false, error: "invalid_verification_code" }
-      }
-      actualRole = validation.role!
-      schoolId = validation.schoolId || null
-      secretaryType = validation.secretaryType || null
-    }
+    // Only founder email gets founder role, everyone else is participant
+    const actualRole: UserRole = isFounder(email) ? "founder" : "participant"
 
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -59,8 +43,6 @@ export async function signUpAction(
           full_name: fullName,
           phone: phone,
           role: actualRole,
-          school_id: schoolId,
-          secretary_type: secretaryType,
         },
       },
     })

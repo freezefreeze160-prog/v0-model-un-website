@@ -232,6 +232,7 @@ export const translations = {
     // New Roles
     general_secretary: "Генеральный секретарь",
     deputy_secretary: "Заместитель секретаря",
+    password_hint: "Минимум 6 символов, должен содержать буквы и цифры",
     founder_instructions: "Создатель сайта - введите пароль верификации",
     founder_password_hint: "Пароль: 2342Summer",
     invalid_verification_code: "Неверный код верификации",
@@ -473,6 +474,7 @@ export const translations = {
     // New Roles
     general_secretary: "Бас хатшы",
     deputy_secretary: "Хатшы орынбасары",
+    password_hint: "Кем дегенде 6 таңба, әріптер мен цифрлар болуы керек",
     founder_instructions: "Сайт құрушысы - растау паролін енгізіңіз",
     founder_password_hint: "Пароль: 2342Summer",
     invalid_verification_code: "Растау кодь қате",
@@ -713,6 +715,7 @@ export const translations = {
     // New Roles
     general_secretary: "General Secretary",
     deputy_secretary: "Deputy Secretary",
+    password_hint: "Minimum 6 characters, must contain letters and numbers",
     founder_instructions: "Site founder - enter verification password",
     founder_password_hint: "Password: 2342Summer",
     invalid_verification_code: "Invalid verification code",
