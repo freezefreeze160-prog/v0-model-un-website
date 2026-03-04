@@ -84,15 +84,20 @@ export default function AdminPanel() {
   async function updateUserRole(userId: string, newRole: string) {
     setUpdatingUserId(userId)
     try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .update({ role: newRole, updated_at: new Date().toISOString() })
-        .eq("user_id", userId)
-        .select()
+      // Use SECURITY DEFINER function to bypass RLS
+      const { data, error } = await supabase.rpc('admin_update_user_role', {
+        target_user_id: userId,
+        new_role: newRole
+      })
 
       if (error) {
         console.error("[v0] Role update error:", error)
         alert(`Error: ${error.message}`)
+        return
+      }
+
+      if (data === false) {
+        alert("Permission denied - only founder can change roles")
         return
       }
 
@@ -136,15 +141,19 @@ export default function AdminPanel() {
   async function deleteUser(userId: string) {
     setDeletingUserId(userId)
     try {
-      // Delete profile (auth user remains but can't access anything)
-      const { error } = await supabase
-        .from("profiles")
-        .delete()
-        .eq("user_id", userId)
+      // Use SECURITY DEFINER function to bypass RLS
+      const { data, error } = await supabase.rpc('admin_delete_user', {
+        target_user_id: userId
+      })
 
       if (error) {
         console.error("[v0] Delete error:", error)
         alert(`Error: ${error.message}`)
+        return
+      }
+
+      if (data === false) {
+        alert("Permission denied - only founder can delete users")
         return
       }
 
