@@ -5,10 +5,11 @@ import { useLanguage } from "@/contexts/language-context"
 import { createClient } from "@/lib/supabase/client"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { RoleBadge } from "@/components/role-badge"
-import { Search } from "lucide-react"
+import { Search, Trash2, Check, X } from "lucide-react"
 import { REGIONS } from "@/lib/roles"
 
 interface Profile {
@@ -36,6 +37,9 @@ export default function AdminPanel() {
   const [filteredUsers, setFilteredUsers] = useState<Profile[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [loading, setLoading] = useState(true)
+  const [updatingUserId, setUpdatingUserId] = useState<string | null>(null)
+  const [deletingUserId, setDeletingUserId] = useState<string | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
   const supabase = createClient()
 
   useEffect(() => {
@@ -78,30 +82,81 @@ export default function AdminPanel() {
   }
 
   async function updateUserRole(userId: string, newRole: string) {
+    setUpdatingUserId(userId)
     try {
-      const { error } = await supabase.from("profiles").update({ role: newRole }).eq("user_id", userId)
+      const { data, error } = await supabase
+        .from("profiles")
+        .update({ role: newRole, updated_at: new Date().toISOString() })
+        .eq("user_id", userId)
+        .select()
 
-      if (error) throw error
+      if (error) {
+        console.error("[v0] Role update error:", error)
+        alert(`Error: ${error.message}`)
+        return
+      }
 
-      alert(t("user_updated"))
-      loadUsers()
+      // Update local state immediately
+      setUsers(prev => prev.map(u => u.user_id === userId ? { ...u, role: newRole } : u))
+      setFilteredUsers(prev => prev.map(u => u.user_id === userId ? { ...u, role: newRole } : u))
     } catch (error) {
       console.error("[v0] Error updating user role:", error)
       alert("Error updating user")
+    } finally {
+      setUpdatingUserId(null)
     }
   }
 
   async function updateUserRegion(userId: string, newRegion: number) {
+    setUpdatingUserId(userId)
     try {
-      const { error } = await supabase.from("profiles").update({ school_id: newRegion }).eq("user_id", userId)
+      const { error } = await supabase
+        .from("profiles")
+        .update({ school_id: newRegion, updated_at: new Date().toISOString() })
+        .eq("user_id", userId)
+        .select()
 
-      if (error) throw error
+      if (error) {
+        console.error("[v0] Region update error:", error)
+        alert(`Error: ${error.message}`)
+        return
+      }
 
-      alert(t("user_updated"))
-      loadUsers()
+      // Update local state immediately
+      setUsers(prev => prev.map(u => u.user_id === userId ? { ...u, school_id: newRegion } : u))
+      setFilteredUsers(prev => prev.map(u => u.user_id === userId ? { ...u, school_id: newRegion } : u))
     } catch (error) {
       console.error("[v0] Error updating user region:", error)
       alert("Error updating user")
+    } finally {
+      setUpdatingUserId(null)
+    }
+  }
+
+  async function deleteUser(userId: string) {
+    setDeletingUserId(userId)
+    try {
+      // Delete profile (auth user remains but can't access anything)
+      const { error } = await supabase
+        .from("profiles")
+        .delete()
+        .eq("user_id", userId)
+
+      if (error) {
+        console.error("[v0] Delete error:", error)
+        alert(`Error: ${error.message}`)
+        return
+      }
+
+      // Remove from local state
+      setUsers(prev => prev.filter(u => u.user_id !== userId))
+      setFilteredUsers(prev => prev.filter(u => u.user_id !== userId))
+      setConfirmDelete(null)
+    } catch (error) {
+      console.error("[v0] Error deleting user:", error)
+      alert("Error deleting user")
+    } finally {
+      setDeletingUserId(null)
     }
   }
 
@@ -154,7 +209,11 @@ export default function AdminPanel() {
                 </div>
 
                 <div className="flex flex-col gap-2 min-w-[220px]">
-                  <Select value={user.role} onValueChange={(value) => updateUserRole(user.user_id, value)}>
+                  <Select 
+                    value={user.role} 
+                    onValueChange={(value) => updateUserRole(user.user_id, value)}
+                    disabled={updatingUserId === user.user_id}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder={t("select_role")} />
                     </SelectTrigger>
@@ -170,6 +229,7 @@ export default function AdminPanel() {
                   <Select
                     value={user.school_id?.toString() || ""}
                     onValueChange={(value) => updateUserRegion(user.user_id, Number.parseInt(value))}
+                    disabled={updatingUserId === user.user_id}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder={t("region")} />
@@ -182,6 +242,40 @@ export default function AdminPanel() {
                       ))}
                     </SelectContent>
                   </Select>
+
+                  {confirmDelete === user.user_id ? (
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => deleteUser(user.user_id)}
+                        disabled={deletingUserId === user.user_id}
+                        className="flex-1"
+                      >
+                        <Check className="h-4 w-4 mr-1" />
+                        {deletingUserId === user.user_id ? "..." : t("confirm")}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setConfirmDelete(null)}
+                        className="flex-1"
+                      >
+                        <X className="h-4 w-4 mr-1" />
+                        {t("cancel")}
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setConfirmDelete(user.user_id)}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      {t("delete_user")}
+                    </Button>
+                  )}
                 </div>
               </div>
             </Card>

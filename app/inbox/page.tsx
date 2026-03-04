@@ -110,13 +110,17 @@ export default function InboxPage() {
         return
       }
 
-      setUserRole(profile.role)
+      // Also check if user is founder by email
+      const isFounderByEmail = user.email === "speed_777_speed@mail.ru"
+      const effectiveRole = isFounderByEmail ? "founder" : profile.role
+      setUserRole(effectiveRole)
 
       let conferencesData: any[] = []
 
-      if (profile.role === "founder") {
+      if (effectiveRole === "founder" || isFounderByEmail) {
         // Founder sees all conferences
-        const { data } = await supabase.from("user_conferences").select("*").order("created_at", { ascending: false })
+        const { data, error: confError } = await supabase.from("user_conferences").select("*").order("created_at", { ascending: false })
+        if (confError) console.log("[v0] Conferences load error:", confError)
         conferencesData = data || []
       } else {
         // Others see only their own conferences
