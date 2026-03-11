@@ -229,7 +229,61 @@ export default function DashboardPage() {
 
   const isGenSecOrFounder = profile?.role === "general_secretary" || profile?.role === "founder"
 
-  async function handleDeleteConference(conferenceId: string, conferenceName: string) {}
+  async function handleDeleteConference(conferenceId: string, conferenceName: string) {
+    if (!confirm(`${t("confirm_delete_conference")}\n\n${conferenceName}`)) {
+      return
+    }
+
+    try {
+      const { data, error } = await supabase.rpc('delete_conference', {
+        conf_id: Number(conferenceId)
+      })
+
+      if (error) throw error
+
+      if (data === false) {
+        alert("Permission denied - only owner can delete")
+        return
+      }
+
+      alert(t("conference_deleted"))
+      
+      // Reload conferences
+      const { data: conferencesData } = await supabase
+        .from("user_conferences")
+        .select("*")
+        .eq("created_by", user?.id)
+        .order("created_at", { ascending: false })
+
+      if (conferencesData) {
+        const conferencesWithApps = await Promise.all(
+          conferencesData.map(async (conf) => {
+            const { data: apps } = await supabase
+              .from("delegate_applications")
+              .select(
+                `
+                *,
+                primary_committee:conference_committees!delegate_applications_primary_committee_id_fkey(id, name, topic),
+                secondary_committee:conference_committees!delegate_applications_secondary_committee_id_fkey(id, name, topic),
+                third_committee:conference_committees!delegate_applications_third_committee_id_fkey(id, name, topic)
+              `,
+              )
+              .eq("conference_id", conf.id)
+              .order("created_at", { ascending: false })
+
+            return {
+              ...conf,
+              applications: apps || [],
+            }
+          }),
+        )
+        setMyConferences(conferencesWithApps)
+      }
+    } catch (error) {
+      console.error("[v0] Error deleting conference:", error)
+      alert("Error: " + (error as Error).message)
+    }
+  }
 
   async function handleToggleRegistration(conferenceId: string, currentStatus: boolean, conferenceName: string) {
     const action = currentStatus ? t("close_registration") : t("open_registration")
@@ -239,12 +293,17 @@ export default function DashboardPage() {
     }
 
     try {
-      const { error } = await supabase
-        .from("user_conferences")
-        .update({ registration_open: !currentStatus })
-        .eq("id", conferenceId)
+      const { data, error } = await supabase.rpc('toggle_conference_registration', {
+        conf_id: Number(conferenceId),
+        is_open: !currentStatus
+      })
 
       if (error) throw error
+
+      if (data === false) {
+        alert("Permission denied - only owner can toggle registration")
+        return
+      }
 
       if (currentStatus) {
         const conference = myConferences.find((c) => c.id === conferenceId)

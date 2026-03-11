@@ -115,15 +115,19 @@ export default function AdminPanel() {
   async function updateUserRegion(userId: string, newRegion: number) {
     setUpdatingUserId(userId)
     try {
-      const { error } = await supabase
-        .from("profiles")
-        .update({ school_id: newRegion, updated_at: new Date().toISOString() })
-        .eq("user_id", userId)
-        .select()
+      const { data, error } = await supabase.rpc('admin_update_user_region', {
+        target_user_id: userId,
+        new_region: newRegion
+      })
 
       if (error) {
         console.error("[v0] Region update error:", error)
         alert(`Error: ${error.message}`)
+        return
+      }
+
+      if (data === false) {
+        alert("Permission denied - only founder can change regions")
         return
       }
 
