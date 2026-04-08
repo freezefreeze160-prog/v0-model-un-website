@@ -17,6 +17,7 @@ export const translations = {
     // Hero Section
     conference_2025: "Конференция 2025",
     welcome: "Добро пожаловать в MUNX NIS",
+    welcome_short: "Воспитываем",
     hero_desc: "Зарегистрируйтесь на предстоящие конференции Model UN в школах НИШ по всему Казахстану.",
     apply_now: "Подать заявку",
     learn_more: "Узнать больше",
@@ -261,6 +262,7 @@ export const translations = {
     // Hero Section
     conference_2025: "Конференция 2025",
     welcome: "MUNX NIS-ке қош келдіңіз",
+    welcome_short: "Дайындаймыз",
     hero_desc: "Қазақстан бойынша НЗМ мектептеріндегі Model UN конференцияларына тіркеліңіз.",
     apply_now: "Өтінім беру",
     learn_more: "Толығырақ",
@@ -505,6 +507,7 @@ export const translations = {
     // Hero Section
     conference_2025: "Conference 2025",
     welcome: "Welcome to MUNX NIS",
+    welcome_short: "We build",
     hero_desc: "Register for upcoming Model UN conferences in NIS schools across Kazakhstan.",
     apply_now: "Apply now",
     learn_more: "Learn more",

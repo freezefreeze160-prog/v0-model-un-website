@@ -8,6 +8,9 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { AnimatedHero } from "@/components/ui/animated-hero"
+import { ContainerScroll } from "@/components/ui/container-scroll-animation"
+import ShaderBackground from "@/components/ui/shader-background"
 import { Calendar, Users, Award, ArrowRight, Clock } from "lucide-react"
 
 interface Conference {
@@ -148,63 +151,74 @@ export default function HomePage() {
     return null
   }
 
+  const heroTitles =
+    language === "ru"
+      ? ["лидеров", "дипломатов", "ораторов", "новаторов", "переговорщиков"]
+      : language === "kk"
+        ? ["көшбасшылар", "дипломаттар", "шешендер", "новаторлар", "келіссөзшілер"]
+        : ["leaders", "diplomats", "speakers", "innovators", "negotiators"]
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
 
       <main className="flex-1">
-        <section className="relative bg-gradient-to-br from-primary/5 via-primary/10 to-accent py-20 md:py-32 overflow-hidden">
-          <div className="absolute inset-0 bg-[url('/abstract-geometric-pattern.png')] opacity-5"></div>
-          <div className="container mx-auto px-4 relative z-10">
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div>
-                <div className="inline-block bg-primary text-primary-foreground px-6 py-2 rounded-full text-sm font-semibold mb-6">
-                  {t("conference_2025")}
-                </div>
-                <h2 className="text-4xl md:text-6xl font-bold mb-6 text-balance text-foreground leading-tight">
-                  {t("welcome")}
-                </h2>
-                <p className="text-lg md:text-xl mb-8 text-muted-foreground text-balance leading-relaxed">
-                  {t("hero_desc")}
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <Button asChild size="lg" className="text-base group">
-                    <Link href="/register">
-                      {t("apply_now")}
-                      <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                    </Link>
-                  </Button>
-                  <Button asChild size="lg" variant="outline" className="text-base bg-transparent">
-                    <Link href="/about">{t("learn_more")}</Link>
-                  </Button>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <img
-                  src="/student-laptop-work.png"
-                  alt="Student 1"
-                  className="rounded-2xl shadow-lg w-full h-64 object-cover"
-                />
-                <img
-                  src="/students-in-discussion.jpg"
-                  alt="Student 2"
-                  className="rounded-2xl shadow-lg w-full h-64 object-cover mt-8"
-                />
-                <img
-                  src="/student-presenting.jpg"
-                  alt="Student 3"
-                  className="rounded-2xl shadow-lg w-full h-64 object-cover -mt-8"
-                />
-                <img
-                  src="/model-un-conference.jpg"
-                  alt="Student 4"
-                  className="rounded-2xl shadow-lg w-full h-64 object-cover"
-                />
-              </div>
-            </div>
+        {/* Hero with shader background */}
+        <section className="relative overflow-hidden min-h-[88vh] flex items-center">
+          <ShaderBackground />
+          {/* dark overlay for readability */}
+          <div className="absolute inset-0 bg-background/60" />
+          <div className="relative z-10 w-full">
+            <AnimatedHero
+              staticText={t("welcome_short") || "Воспитываем"}
+              titles={heroTitles}
+              description={t("hero_desc")}
+              primaryLabel={t("apply_now")}
+              primaryHref="/register"
+              secondaryLabel={t("learn_more")}
+              secondaryHref="/about"
+            />
           </div>
         </section>
 
+        {/* Scroll-animation feature preview */}
+        <section className="bg-background overflow-hidden">
+          <ContainerScroll
+            titleComponent={
+              <div className="flex flex-col items-center gap-4">
+                <span className="inline-block bg-primary/10 text-primary px-4 py-1.5 rounded-full text-sm font-semibold">
+                  {t("conference_2025")}
+                </span>
+                <h2 className="text-3xl md:text-5xl font-bold text-foreground text-balance text-center">
+                  {t("upcoming")}
+                </h2>
+                <p className="text-muted-foreground text-lg max-w-xl text-center">
+                  {t("upcoming_desc")}
+                </p>
+              </div>
+            }
+          >
+            <div className="h-full w-full flex items-center justify-center p-6 bg-muted/50">
+              <div className="grid sm:grid-cols-3 gap-4 w-full max-w-2xl">
+                {[
+                  { icon: Users, label: t("networking"), desc: t("networking_desc") },
+                  { icon: Award, label: t("skills"), desc: t("skills_desc") },
+                  { icon: Calendar, label: t("experience"), desc: t("experience_desc") },
+                ].map(({ icon: Icon, label, desc }) => (
+                  <div key={label} className="bg-background rounded-xl p-4 flex flex-col gap-2 shadow-sm border border-border/50">
+                    <div className="w-9 h-9 bg-primary/10 rounded-lg flex items-center justify-center">
+                      <Icon className="w-5 h-5 text-primary" />
+                    </div>
+                    <p className="font-semibold text-foreground text-sm">{label}</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">{desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </ContainerScroll>
+        </section>
+
+        {/* Features */}
         <section className="py-16 md:py-24 bg-background">
           <div className="container mx-auto px-4">
             <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
@@ -239,6 +253,7 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* Upcoming conferences */}
         <section className="py-16 md:py-24 bg-accent/30">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
