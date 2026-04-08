@@ -38,7 +38,6 @@ export async function signUpAction(
       email,
       password,
       options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/dashboard`,
         data: {
           full_name: fullName,
           phone: phone,
@@ -48,7 +47,15 @@ export async function signUpAction(
     })
 
     if (error) {
-      return { success: false, error: error.message.includes("already registered") ? "error_email_exists" : "error_creating_account" }
+      if (error.message.includes("already registered") || error.message.includes("already been registered")) {
+        return { success: false, error: "error_email_exists" }
+      }
+      return { success: false, error: "error_creating_account" }
+    }
+
+    // If user is null but no error, email confirmation is required
+    if (!data.user) {
+      return { success: false, error: "error_creating_account" }
     }
 
     revalidatePath("/", "layout")
