@@ -19,7 +19,7 @@ interface Profile {
   bio: string | null
   photo_url: string | null
   role: string
-  school_id: number | null
+  region: number | null
   phone: string | null
 }
 
@@ -132,8 +132,8 @@ export default function AdminPanel() {
       }
 
       // Update local state immediately
-      setUsers(prev => prev.map(u => u.user_id === userId ? { ...u, school_id: newRegion } : u))
-      setFilteredUsers(prev => prev.map(u => u.user_id === userId ? { ...u, school_id: newRegion } : u))
+      setUsers(prev => prev.map(u => u.user_id === userId ? { ...u, region: newRegion } : u))
+      setFilteredUsers(prev => prev.map(u => u.user_id === userId ? { ...u, region: newRegion } : u))
     } catch (error) {
       console.error("[v0] Error updating user region:", error)
       alert("Error updating user")
@@ -215,7 +215,7 @@ export default function AdminPanel() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <h3 className="font-semibold text-lg">{user.full_name}</h3>
-                    <RoleBadge role={user.role} region={user.school_id} />
+                    <RoleBadge role={user.role} region={user.region} />
                   </div>
                   {user.bio && <p className="text-sm text-muted-foreground line-clamp-2">{user.bio}</p>}
                   {user.phone && <p className="text-sm text-muted-foreground mt-1">📞 {user.phone}</p>}
@@ -240,7 +240,7 @@ export default function AdminPanel() {
                   </Select>
 
                   <Select
-                    value={user.school_id?.toString() || ""}
+                    value={user.region?.toString() || ""}
                     onValueChange={(value) => updateUserRegion(user.user_id, Number.parseInt(value))}
                     disabled={updatingUserId === user.user_id}
                   >

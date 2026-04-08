@@ -250,11 +250,11 @@ export default function InboxPage() {
         }
       }
 
-      // Update database using RPC
+      // Update database using RPC (all IDs are UUIDs)
       const updates = Object.entries(assignments).map(([appId, committeeId]) => {
         return supabase.rpc('assign_delegate', {
-          app_id: Number(appId),
-          committee_id: Number(committeeId),
+          app_id: appId,
+          committee_id: committeeId,
           country_name: countryAssignments[appId] || null
         })
       })
@@ -272,7 +272,7 @@ export default function InboxPage() {
   async function updateApplicationStatus(applicationId: string, status: string) {
     try {
       const { data, error } = await supabase.rpc('update_application_status', {
-        app_id: Number(applicationId),
+        app_id: applicationId,
         new_status: status
       })
 
@@ -294,7 +294,7 @@ export default function InboxPage() {
   async function approveConference(conferenceId: string) {
     try {
       const { data, error } = await supabase.rpc('approve_conference', {
-        conf_id: Number(conferenceId),
+        conf_id: conferenceId,
         approver_id: userId
       })
 
@@ -318,7 +318,7 @@ export default function InboxPage() {
 
     try {
       const { data, error } = await supabase.rpc('reject_conference', {
-        conf_id: Number(conferenceId)
+        conf_id: conferenceId
       })
 
       if (error) throw error

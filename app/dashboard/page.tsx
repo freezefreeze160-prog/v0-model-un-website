@@ -236,7 +236,7 @@ export default function DashboardPage() {
 
     try {
       const { data, error } = await supabase.rpc('delete_conference', {
-        conf_id: Number(conferenceId)
+        conf_id: conferenceId
       })
 
       if (error) throw error
@@ -252,7 +252,7 @@ export default function DashboardPage() {
       const { data: conferencesData } = await supabase
         .from("user_conferences")
         .select("*")
-        .eq("created_by", user?.id)
+        .eq("creator_id", user?.id)
         .order("created_at", { ascending: false })
 
       if (conferencesData) {
@@ -294,7 +294,7 @@ export default function DashboardPage() {
 
     try {
       const { data, error } = await supabase.rpc('toggle_conference_registration', {
-        conf_id: Number(conferenceId),
+        conf_id: conferenceId,
         is_open: !currentStatus
       })
 
