@@ -16,15 +16,15 @@ export const translations = {
 
     // Hero Section
     conference_2025: "Конференция 2025",
-    welcome: "Добро пожаловать в MUNX NIS",
+    welcome: "Добро пожаловать в MUN Kazakhstan",
     welcome_short: "Воспитываем",
-    hero_desc: "Зарегистрируйтесь на предстоящие конференции Model UN в школах НИШ по всему Казахстану.",
+    hero_desc: "Зарегистрируйтесь на предстоящие конференции Model UN по всему Казахстану.",
     apply_now: "Подать заявку",
     learn_more: "Узнать больше",
 
     // Features
     networking: "Нетворкинг",
-    networking_desc: "Познакомьтесь с единомышленниками из разных школ НИШ и расширьте свою сеть контактов.",
+    networking_desc: "Познакомьтесь с единомышленниками из разных школ Казахстана и расширьте свою сеть контактов.",
     skills: "Навыки",
     skills_desc: "Развивайте навыки публичных выступлений, дипломатии и критического мышления.",
     experience: "Опыт",
@@ -32,7 +32,7 @@ export const translations = {
 
     // Conferences
     upcoming: "Ближайшие конференции",
-    upcoming_desc: "Зарегистрируйтесь на предстоящие конференции Model UN в школах НИШ по всему Казахстану.",
+    upcoming_desc: "Зарегистрируйтесь на предстоящие конференции Model UN по всему Казахстану.",
     no_conferences: "Нет доступных конференций",
     view_conferences: "Посмотреть конференции",
     all_conferences: "Все конференции",
@@ -208,7 +208,7 @@ export const translations = {
 
     // About
     about_title: "О Model UN",
-    about_desc: "Узнайте больше о программе Model UN в школах НИШ",
+    about_desc: "Узнайте больше о программе Model UN по всему Казахстану",
 
     // Secretariat
     secretariat_title: "Секретариат",
@@ -261,16 +261,16 @@ export const translations = {
 
     // Hero Section
     conference_2025: "Конференция 2025",
-    welcome: "MUNX NIS-ке қош келдіңіз",
+    welcome: "MUN Kazakhstan-ға қош келдіңіз",
     welcome_short: "Дайындаймыз",
-    hero_desc: "Қазақстан бойынша НЗМ мектептеріндегі Model UN конференцияларына тіркеліңіз.",
+    hero_desc: "Қазақстан бойынша Model UN конференцияларына тіркеліңіз.",
     apply_now: "Өтінім беру",
     learn_more: "Толығырақ",
 
     // Features
     networking: "Желілік байланыс",
     networking_desc:
-      "Әртүрлі НЗМ мектептерінен ойластары бірдей адамдармен танысыңыз және байланыстар желісін кеңейтіңіз.",
+      "Қазақстанның әртүрлі мектептерінен ойластары бірдей адамдармен танысыңыз және байланыстар желісін кеңейтіңіз.",
     skills: "Дағдылар",
     skills_desc: "Көпшілік алдында сөйлеу, дипломатия және сыни ойлау дағдыларын дамытыңыз.",
     experience: "Тәжірибе",
@@ -278,7 +278,7 @@ export const translations = {
 
     // Conferences
     upcoming: "Жақын арадағы конференциялар",
-    upcoming_desc: "Қазақстан бойынша НЗМ мектептеріндегі Model UN конференцияларына тіркеліңіз.",
+    upcoming_desc: "Қазақстан бойынша Model UN конференцияларына тіркеліңіз.",
     no_conferences: "Қолжетімді конференциялар жоқ",
     view_conferences: "Конференцияларды көру",
     all_conferences: "Барлық конференциялар",
@@ -320,7 +320,7 @@ export const translations = {
     verification_code: "Код верификации",
     conference: "Конференция",
     select_conference: "Конференцияны таңдаңыз",
-    school: "НЗМ мектебі",
+    school: "Мектеп",
     select_school: "Мектепті таңдаңыз",
     grade: "Сынып",
     motivation: "Мотивациялық хат (міндетті емес)",
@@ -453,7 +453,7 @@ export const translations = {
 
     // About
     about_title: "Model UN туралы",
-    about_desc: "НЗМ мектептеріндегі Model UN бағдарламасы туралы көбірек біліңіз",
+    about_desc: "Қазақстан бойынша Model UN бағдарламасы туралы көбірек біліңіз",
 
     // Secretariat
     secretariat_title: "Хатшылық",
@@ -506,15 +506,15 @@ export const translations = {
 
     // Hero Section
     conference_2025: "Conference 2025",
-    welcome: "Welcome to MUNX NIS",
+    welcome: "Welcome to MUN Kazakhstan",
     welcome_short: "We build",
-    hero_desc: "Register for upcoming Model UN conferences in NIS schools across Kazakhstan.",
+    hero_desc: "Register for upcoming Model UN conferences across Kazakhstan.",
     apply_now: "Apply now",
     learn_more: "Learn more",
 
     // Features
     networking: "Networking",
-    networking_desc: "Meet like-minded people from different NIS schools and expand your network.",
+    networking_desc: "Meet like-minded people from schools across Kazakhstan and expand your network.",
     skills: "Skills",
     skills_desc: "Develop public speaking, diplomacy, and critical thinking skills.",
     experience: "Experience",
@@ -522,7 +522,7 @@ export const translations = {
 
     // Conferences
     upcoming: "Upcoming conferences",
-    upcoming_desc: "Register for upcoming Model UN conferences in NIS schools across Kazakhstan.",
+    upcoming_desc: "Register for upcoming Model UN conferences across Kazakhstan.",
     no_conferences: "No available conferences",
     view_conferences: "View conferences",
     all_conferences: "All conferences",
@@ -564,7 +564,7 @@ export const translations = {
     verification_code: "Verification code",
     conference: "Conference",
     select_conference: "Select conference",
-    school: "NIS School",
+    school: "School",
     select_school: "Select school",
     grade: "Grade",
     motivation: "Motivation letter (optional)",
@@ -697,7 +697,7 @@ export const translations = {
 
     // About
     about_title: "About Model UN",
-    about_desc: "Learn more about the Model UN program in NIS schools",
+    about_desc: "Learn more about the Model UN program across Kazakhstan",
 
     // Secretariat
     secretariat_title: "Secretariat",

@@ -73,39 +73,7 @@ export default function HomePage() {
         return
       }
 
-      // Filter conferences that are within 2 weeks (upcoming)
-      const now = new Date()
-      const twoWeeksFromNow = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000)
-
-      const upcoming = (data || []).filter((conf) => {
-        // Try to parse the date from date_ru field (format: "15-17 марта 2025")
-        const dateMatch = conf.date_ru?.match(/(\d+)[-–](\d+)\s+(\w+)\s+(\d{4})/)
-        if (dateMatch) {
-          const [, , endDay, month, year] = dateMatch
-          const monthMap: { [key: string]: number } = {
-            января: 0,
-            февраля: 1,
-            марта: 2,
-            апреля: 3,
-            мая: 4,
-            июня: 5,
-            июля: 6,
-            августа: 7,
-            сентября: 8,
-            октября: 9,
-            ноября: 10,
-            декабря: 11,
-          }
-          const monthNum = monthMap[month.toLowerCase()]
-          if (monthNum !== undefined) {
-            const confDate = new Date(Number.parseInt(year), monthNum, Number.parseInt(endDay))
-            return confDate >= now && confDate <= twoWeeksFromNow
-          }
-        }
-        return true // Include if we can't parse the date
-      })
-
-      setUpcomingConferences(upcoming.slice(0, 2))
+      setUpcomingConferences((data || []).slice(0, 4))
     } catch (error) {
       console.error("[v0] Error loading conferences:", error)
     } finally {
@@ -181,7 +149,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Scroll-animation feature preview */}
+        {/* Scroll-animation: real available conferences */}
         <section className="bg-background overflow-hidden">
           <ContainerScroll
             titleComponent={
@@ -198,22 +166,52 @@ export default function HomePage() {
               </div>
             }
           >
-            <div className="h-full w-full flex items-center justify-center p-6 bg-muted/50">
-              <div className="grid sm:grid-cols-3 gap-4 w-full max-w-2xl">
-                {[
-                  { icon: Users, label: t("networking"), desc: t("networking_desc") },
-                  { icon: Award, label: t("skills"), desc: t("skills_desc") },
-                  { icon: Calendar, label: t("experience"), desc: t("experience_desc") },
-                ].map(({ icon: Icon, label, desc }) => (
-                  <div key={label} className="bg-background rounded-xl p-4 flex flex-col gap-2 shadow-sm border border-border/50">
-                    <div className="w-9 h-9 bg-primary/10 rounded-lg flex items-center justify-center">
-                      <Icon className="w-5 h-5 text-primary" />
-                    </div>
-                    <p className="font-semibold text-foreground text-sm">{label}</p>
-                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">{desc}</p>
-                  </div>
-                ))}
-              </div>
+            <div className="h-full w-full p-6 bg-muted/30 overflow-y-auto">
+              {loading ? (
+                <div className="flex items-center justify-center h-full">
+                  <p className="text-muted-foreground">{t("loading")}</p>
+                </div>
+              ) : upcomingConferences.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full gap-4">
+                  <p className="text-muted-foreground text-center">{t("no_conferences")}</p>
+                  <Button asChild variant="outline" size="sm">
+                    <Link href="/conferences">{t("view_conferences")}</Link>
+                  </Button>
+                </div>
+              ) : (
+                <div className="grid sm:grid-cols-2 gap-4 content-start">
+                  {upcomingConferences.map((conf) => {
+                    const daysLeft = getDaysUntilConference(conf)
+                    return (
+                      <Link key={conf.id} href={`/conferences/${conf.id}`} className="group">
+                        <div className="bg-background rounded-xl p-5 flex flex-col gap-3 shadow-sm border border-border/60 hover:border-primary/50 hover:shadow-md transition-all h-full">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                              <Calendar className="w-4 h-4 text-primary" />
+                            </div>
+                            {daysLeft !== null && daysLeft <= 14 && (
+                              <span className="px-2 py-0.5 bg-orange-100 text-orange-700 rounded-full text-xs font-medium flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                {daysLeft}d
+                              </span>
+                            )}
+                          </div>
+                          <div>
+                            <p className="font-bold text-foreground text-sm leading-snug">{getConferenceName(conf)}</p>
+                            <p className="text-xs text-muted-foreground mt-1">{getConferenceDate(conf)}</p>
+                            {conf.location && (
+                              <p className="text-xs text-muted-foreground mt-0.5">{conf.location}</p>
+                            )}
+                          </div>
+                          <span className="text-xs text-primary font-medium group-hover:underline mt-auto">
+                            {t("learn_more")} →
+                          </span>
+                        </div>
+                      </Link>
+                    )
+                  })}
+                </div>
+              )}
             </div>
           </ContainerScroll>
         </section>

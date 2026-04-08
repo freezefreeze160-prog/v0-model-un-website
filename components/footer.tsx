@@ -23,7 +23,7 @@ export function Footer() {
             </a>
           </div>
         </div>
-        <p className="text-center text-sm text-muted-foreground mt-4">© 2025 NIS Model UN. {t("contact")}</p>
+        <p className="text-center text-sm text-muted-foreground mt-4">© 2025 MUN Kazakhstan. {t("contact")}</p>
       </div>
     </footer>
   )
