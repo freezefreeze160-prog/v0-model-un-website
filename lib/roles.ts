@@ -10,6 +10,7 @@ export interface UserProfile {
   photo_url?: string
   role: UserRole
   region?: number
+  supervisor_id?: string | null
   created_at: string
   updated_at: string
 }
@@ -122,7 +123,9 @@ export function canCreateNews(role: UserRole): boolean {
 }
 
 export function canCreateConference(role: UserRole): boolean {
-  return role === "founder" || role === "general_secretary" || role === "deputy"
+  // Only General Secretary and Founder can create conferences
+  // Deputies are auto-assigned by their supervisors
+  return role === "founder" || role === "general_secretary"
 }
 
 export function canApproveConference(role: UserRole): boolean {
@@ -131,4 +134,32 @@ export function canApproveConference(role: UserRole): boolean {
 
 export function canPublishConference(role: UserRole): boolean {
   return role === "founder" || role === "admin"
+}
+
+export function canAssignDeputy(role: UserRole): boolean {
+  // Only General Secretary can assign deputies
+  return role === "general_secretary"
+}
+
+export function canManageAllUsers(role: UserRole): boolean {
+  // Only Founder can manage all users (Admin Panel access)
+  return role === "founder"
+}
+
+export function canManageConference(role: UserRole, conferenceCreatorId: string, currentUserId: string, assignedDeputyId?: string | null): boolean {
+  // Founder can manage any conference
+  if (role === "founder") return true
+  
+  // Creator (General Secretary) can manage their own conference
+  if (conferenceCreatorId === currentUserId) return true
+  
+  // Assigned Deputy can manage the conference
+  if (assignedDeputyId && assignedDeputyId === currentUserId) return true
+  
+  return false
+}
+
+export function needsSupervisor(role: UserRole): boolean {
+  // Deputies must have a supervisor (General Secretary)
+  return role === "deputy"
 }

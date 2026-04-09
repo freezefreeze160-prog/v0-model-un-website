@@ -21,6 +21,7 @@ interface Profile {
   role: string
   region: number | null
   phone: string | null
+  supervisor_id: string | null
 }
 
 const ROLE_OPTIONS = [
@@ -142,6 +143,38 @@ export default function AdminPanel() {
     }
   }
 
+  async function updateSupervisor(deputyUserId: string, supervisorUserId: string | null) {
+    setUpdatingUserId(deputyUserId)
+    try {
+      const { data, error } = await supabase.rpc('admin_assign_supervisor', {
+        deputy_user_id: deputyUserId,
+        supervisor_user_id: supervisorUserId
+      })
+
+      if (error) {
+        console.error("[v0] Supervisor update error:", error)
+        alert(`Error: ${error.message}`)
+        return
+      }
+
+      if (data === false) {
+        alert("Permission denied - only founder can assign supervisors")
+        return
+      }
+
+      // Update local state
+      setUsers(prev => prev.map(u => u.user_id === deputyUserId ? { ...u, supervisor_id: supervisorUserId } : u))
+      setFilteredUsers(prev => prev.map(u => u.user_id === deputyUserId ? { ...u, supervisor_id: supervisorUserId } : u))
+      
+      await loadUsers() // Reload to get fresh data
+    } catch (error) {
+      console.error("[v0] Error updating supervisor:", error)
+      alert("Error updating supervisor")
+    } finally {
+      setUpdatingUserId(null)
+    }
+  }
+
   async function deleteUser(userId: string) {
     setDeletingUserId(userId)
     try {
@@ -255,6 +288,29 @@ export default function AdminPanel() {
                       ))}
                     </SelectContent>
                   </Select>
+
+                  {/* Supervisor selector - only show for Deputies */}
+                  {user.role === "deputy" && (
+                    <Select
+                      value={user.supervisor_id || "none"}
+                      onValueChange={(value) => updateSupervisor(user.user_id, value === "none" ? null : value)}
+                      disabled={updatingUserId === user.user_id}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder={language === "ru" ? "Супервайзер" : language === "kk" ? "Супервайзер" : "Supervisor"} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">{language === "ru" ? "Без супервайзера" : language === "kk" ? "Супервайзерсіз" : "No supervisor"}</SelectItem>
+                        {users
+                          .filter(u => u.role === "general_secretary" && u.region === user.region)
+                          .map(genSec => (
+                            <SelectItem key={genSec.user_id} value={genSec.user_id}>
+                              {genSec.full_name}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  )}
 
                   {confirmDelete === user.user_id ? (
                     <div className="flex gap-2">

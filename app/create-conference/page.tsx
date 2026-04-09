@@ -37,6 +37,8 @@ export default function CreateConferencePage() {
   const [canCreate, setCanCreate] = useState(false)
   const [userRole, setUserRole] = useState<string>("")
   const [myConferences, setMyConferences] = useState<any[]>([])
+  const [myDeputies, setMyDeputies] = useState<any[]>([])
+  const [selectedDeputy, setSelectedDeputy] = useState<string>("")
   const [committees, setCommittees] = useState<Committee[]>([
     { name: "", topic: "", capacity: 15, priority: 1, countries: [], languages: [] },
   ])
@@ -70,14 +72,26 @@ export default function CreateConferencePage() {
 
       const { data: profile } = await supabase.from("profiles").select("role").eq("user_id", user.id).single()
 
+      // Only Founder and General Secretary can create conferences
+      // Deputies are assigned by their supervisors, not create themselves
       const allowed =
         isFounder(user.email) ||
         profile?.role === "founder" ||
-        profile?.role === "general_secretary" ||
-        profile?.role === "admin"
+        profile?.role === "general_secretary"
 
       setCanCreate(allowed)
       setUserRole(profile?.role || "")
+
+      // If General Secretary, load their deputies
+      if (profile?.role === "general_secretary") {
+        const { data: deputies } = await supabase
+          .from("profiles")
+          .select("user_id, full_name, region")
+          .eq("supervisor_id", user.id)
+          .eq("role", "deputy")
+
+        setMyDeputies(deputies || [])
+      }
 
       if (!allowed) {
         alert(t("no_permission_create_conference"))
@@ -170,6 +184,7 @@ export default function CreateConferencePage() {
       if (!user) throw new Error("Not authenticated")
 
       const status = userRole === "founder" ? "published" : "pending"
+      const approvalRequired = userRole === "general_secretary" // Gen Sec conferences need approval
 
       const { data: conferenceData, error: confError } = await supabase
         .from("user_conferences")
@@ -194,6 +209,8 @@ export default function CreateConferencePage() {
           registration_fee_currency: formData.registration_fee_currency,
           languages: formData.languages,
           status: status,
+          assigned_deputy_id: selectedDeputy || null,
+          approval_required: approvalRequired,
         })
         .select()
         .single()
@@ -353,6 +370,32 @@ export default function CreateConferencePage() {
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Deputy Assignment - only for General Secretary */}
+              {userRole === "general_secretary" && myDeputies.length > 0 && (
+                <div className="grid gap-2">
+                  <Label htmlFor="deputy">
+                    {language === "ru" ? "Назначить заместителя" : language === "kk" ? "Орынбасарды тағайындау" : "Assign Deputy"} 
+                    <span className="text-sm text-muted-foreground ml-2">({language === "ru" ? "необязательно" : language === "kk" ? "міндетті емес" : "optional"})</span>
+                  </Label>
+                  <Select value={selectedDeputy} onValueChange={setSelectedDeputy}>
+                    <SelectTrigger>
+                      <SelectValue placeholder={language === "ru" ? "Выберите заместителя" : language === "kk" ? "Орынбасарды таңдаңыз" : "Select deputy"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">{language === "ru" ? "Без заместителя" : language === "kk" ? "Орынбасарсыз" : "No deputy"}</SelectItem>
+                      {myDeputies.map((deputy) => (
+                        <SelectItem key={deputy.user_id} value={deputy.user_id}>
+                          {deputy.full_name} {deputy.region && `(${REGIONS[deputy.region]?.[language]})`}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-sm text-muted-foreground">
+                    {language === "ru" ? "Заместитель сможет управлять заявками и комитетами этой конференции" : language === "kk" ? "Орынбасар осы конференцияның өтінімдері мен комитеттерін басқара алады" : "Deputy will be able to manage applications and committees for this conference"}
+                  </p>
+                </div>
+              )}
 
               <div className="grid gap-2">
                 <Label htmlFor="location">{t("conference_location")} *</Label>
