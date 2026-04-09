@@ -110,13 +110,17 @@ export default function InboxPage() {
         return
       }
 
-      setUserRole(profile.role)
+      // Also check if user is founder by email
+      const isFounderByEmail = user.email === "speed_777_speed@mail.ru"
+      const effectiveRole = isFounderByEmail ? "founder" : profile.role
+      setUserRole(effectiveRole)
 
       let conferencesData: any[] = []
 
-      if (profile.role === "founder") {
+      if (effectiveRole === "founder" || isFounderByEmail) {
         // Founder sees all conferences
-        const { data } = await supabase.from("user_conferences").select("*").order("created_at", { ascending: false })
+        const { data, error: confError } = await supabase.from("user_conferences").select("*").order("created_at", { ascending: false })
+        if (confError) console.log("[v0] Conferences load error:", confError)
         conferencesData = data || []
       } else {
         // Others see only their own conferences
@@ -246,13 +250,13 @@ export default function InboxPage() {
         }
       }
 
-      // Update database
+      // Update database using RPC (all IDs are UUIDs)
       const updates = Object.entries(assignments).map(([appId, committeeId]) => {
-        const updateData: any = { assigned_committee_id: committeeId }
-        if (countryAssignments[appId]) {
-          updateData.assigned_country = countryAssignments[appId]
-        }
-        return supabase.from("delegate_applications").update(updateData).eq("id", appId)
+        return supabase.rpc('assign_delegate', {
+          app_id: appId,
+          committee_id: committeeId,
+          country_name: countryAssignments[appId] || null
+        })
       })
 
       await Promise.all(updates)
@@ -267,34 +271,45 @@ export default function InboxPage() {
 
   async function updateApplicationStatus(applicationId: string, status: string) {
     try {
-      const { error } = await supabase.from("delegate_applications").update({ status }).eq("id", applicationId)
+      const { data, error } = await supabase.rpc('update_application_status', {
+        app_id: applicationId,
+        new_status: status
+      })
 
       if (error) throw error
+      
+      if (data === false) {
+        alert("Permission denied")
+        return
+      }
 
       alert(t("status_updated"))
       await loadApplications()
     } catch (error) {
       console.error("[v0] Error updating application status:", error)
+      alert("Error: " + (error as Error).message)
     }
   }
 
   async function approveConference(conferenceId: string) {
     try {
-      const { error } = await supabase
-        .from("user_conferences")
-        .update({
-          status: "published",
-          approved_by: userId,
-          approved_at: new Date().toISOString(),
-        })
-        .eq("id", conferenceId)
+      const { data, error } = await supabase.rpc('approve_conference', {
+        conf_id: conferenceId,
+        approver_id: userId
+      })
 
       if (error) throw error
+      
+      if (data === false) {
+        alert("Permission denied - only founder can approve")
+        return
+      }
 
       alert(t("conference_approved"))
       await loadApplications()
     } catch (error) {
       console.error("[v0] Error approving conference:", error)
+      alert("Error: " + (error as Error).message)
     }
   }
 
@@ -302,14 +317,22 @@ export default function InboxPage() {
     if (!confirm(t("confirm_reject_conference"))) return
 
     try {
-      const { error } = await supabase.from("user_conferences").update({ status: "rejected" }).eq("id", conferenceId)
+      const { data, error } = await supabase.rpc('reject_conference', {
+        conf_id: conferenceId
+      })
 
       if (error) throw error
+      
+      if (data === false) {
+        alert("Permission denied - only founder can reject")
+        return
+      }
 
       alert(t("conference_rejected"))
       await loadApplications()
     } catch (error) {
       console.error("[v0] Error rejecting conference:", error)
+      alert("Error: " + (error as Error).message)
     }
   }
 

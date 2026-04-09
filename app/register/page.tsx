@@ -201,25 +201,34 @@ export default function RegisterPage() {
     }
   }
 
-  const nisCities = [
-    "almaty",
-    "astana",
-    "shymkent",
-    "aktobe",
-    "aktau",
-    "atyrau",
-    "kokshetau",
-    "karaganda",
-    "kostanay",
-    "kyzylorda",
-    "pavlodar",
-    "petropavlovsk",
-    "taraz",
-    "taldykorgan",
-    "turkestan",
-    "uralsk",
-    "ust_kamenogorsk",
-    "semey",
+  const kazakhstanSchools = [
+    // NIS schools
+    { value: "nis_almaty", label: { ru: "НИШ г. Алматы", kk: "НЗМ Алматы", en: "NIS Almaty" } },
+    { value: "nis_astana", label: { ru: "НИШ г. Астана", kk: "НЗМ Астана", en: "NIS Astana" } },
+    { value: "nis_shymkent", label: { ru: "НИШ г. Шымкент", kk: "НЗМ Шымкент", en: "NIS Shymkent" } },
+    { value: "nis_aktobe", label: { ru: "НИШ г. Актобе", kk: "НЗМ Ақтөбе", en: "NIS Aktobe" } },
+    { value: "nis_aktau", label: { ru: "НИШ г. Актау", kk: "НЗМ Ақтау", en: "NIS Aktau" } },
+    { value: "nis_atyrau", label: { ru: "НИШ г. Атырау", kk: "НЗМ Атырау", en: "NIS Atyrau" } },
+    { value: "nis_kokshetau", label: { ru: "НИШ г. Кокшетау", kk: "НЗМ Көкшетау", en: "NIS Kokshetau" } },
+    { value: "nis_karaganda", label: { ru: "НИШ г. Қарағанды", kk: "НЗМ Қарағанды", en: "NIS Karaganda" } },
+    { value: "nis_kostanay", label: { ru: "НИШ г. Костанай", kk: "НЗМ Қостанай", en: "NIS Kostanay" } },
+    { value: "nis_kyzylorda", label: { ru: "НИШ г. Кызылорда", kk: "НЗМ Қызылорда", en: "NIS Kyzylorda" } },
+    { value: "nis_pavlodar", label: { ru: "НИШ г. Павлодар", kk: "НЗМ Павлодар", en: "NIS Pavlodar" } },
+    { value: "nis_petropavlovsk", label: { ru: "НИШ г. Петропавловск", kk: "НЗМ Петропавл", en: "NIS Petropavlovsk" } },
+    { value: "nis_taraz", label: { ru: "НИШ г. Тараз", kk: "НЗМ Тараз", en: "NIS Taraz" } },
+    { value: "nis_taldykorgan", label: { ru: "НИШ г. Талдыкорган", kk: "НЗМ Талдықорған", en: "NIS Taldykorgan" } },
+    { value: "nis_turkestan", label: { ru: "НИШ г. Туркестан", kk: "НЗМ Түркістан", en: "NIS Turkestan" } },
+    { value: "nis_uralsk", label: { ru: "НИШ г. Уральск", kk: "НЗМ Орал", en: "NIS Uralsk" } },
+    { value: "nis_ust_kamenogorsk", label: { ru: "НИШ г. Усть-Каменогорск", kk: "НЗМ Өскемен", en: "NIS Ust-Kamenogorsk" } },
+    { value: "nis_semey", label: { ru: "НИШ г. Семей", kk: "НЗМ Семей", en: "NIS Semey" } },
+    // Regular schools by city
+    { value: "school_almaty", label: { ru: "Другая школа в Алматы", kk: "Алматыдағы басқа мектеп", en: "Other school in Almaty" } },
+    { value: "school_astana", label: { ru: "Другая школа в Астане", kk: "Астанадағы басқа мектеп", en: "Other school in Astana" } },
+    { value: "school_shymkent", label: { ru: "Другая школа в Шымкенте", kk: "Шымкенттегі басқа мектеп", en: "Other school in Shymkent" } },
+    { value: "school_aktobe", label: { ru: "Другая школа в Актобе", kk: "Ақтөбедегі басқа мектеп", en: "Other school in Aktobe" } },
+    { value: "school_semey", label: { ru: "Другая школа в Семее", kk: "Семейдегі басқа мектеп", en: "Other school in Semey" } },
+    { value: "school_karaganda", label: { ru: "Другая школа в Карагандe", kk: "Қарағандыдағы басқа мектеп", en: "Other school in Karaganda" } },
+    { value: "school_other", label: { ru: "Другая школа (другой город)", kk: "Басқа мектеп (басқа қала)", en: "Other school (other city)" } },
   ]
 
   return (
@@ -301,16 +310,16 @@ export default function RegisterPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="school" className="text-foreground">
-                    {t("school")}
+                    {t("school")} <span className="text-red-500">*</span>
                   </Label>
                   <Select name="school" required>
                     <SelectTrigger>
-                      <SelectValue placeholder={t("select_school")} />
+                      <SelectValue placeholder={language === "ru" ? "Выберите школу" : language === "kk" ? "Мектепті таңдаңыз" : "Choose your school"} />
                     </SelectTrigger>
                     <SelectContent>
-                      {nisCities.map((city) => (
-                        <SelectItem key={city} value={city}>
-                          {t(`city_${city}`)}
+                      {kazakhstanSchools.map((school) => (
+                        <SelectItem key={school.value} value={school.value}>
+                          {school.label[language as keyof typeof school.label]}
                         </SelectItem>
                       ))}
                     </SelectContent>

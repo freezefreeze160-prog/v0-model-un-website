@@ -4,7 +4,7 @@ import Link from "next/link"
 import { useLanguage } from "@/contexts/language-context"
 import { useTheme } from "@/contexts/theme-context"
 import { Button } from "@/components/ui/button"
-import { Globe, User, Search, Shield, Moon, Sun, Inbox } from "lucide-react"
+import { User, Search, Shield, Moon, Sun, Inbox } from "lucide-react"
 import { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import type { User as SupabaseUser } from "@supabase/supabase-js"
@@ -19,21 +19,40 @@ export function Header() {
 
   useEffect(() => {
     const getUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      setUser(user)
-      if (user?.email === "speed_777_speed@mail.ru") {
-        setIsFounder(true)
-        setCanManageConferences(true)
-      }
+      try {
+        const {
+          data: { user },
+          error,
+        } = await supabase.auth.getUser()
 
-      if (user) {
-        const { data: profileData } = await supabase.from("profiles").select("role").eq("user_id", user.id).single()
+        if (error) {
+          // Clear stale/invalid session
+          await supabase.auth.signOut()
+          setUser(null)
+          setIsFounder(false)
+          setCanManageConferences(false)
+          return
+        }
 
-        if (profileData?.role === "general_secretary" || profileData?.role === "admin") {
+        setUser(user)
+        if (user?.email === "speed_777_speed@mail.ru") {
+          setIsFounder(true)
           setCanManageConferences(true)
         }
+
+        if (user) {
+          const { data: profileData } = await supabase.from("profiles").select("role").eq("user_id", user.id).single()
+
+          if (profileData?.role === "general_secretary" || profileData?.role === "admin") {
+            setCanManageConferences(true)
+          }
+        }
+      } catch {
+        // Network or other error - clear session
+        await supabase.auth.signOut()
+        setUser(null)
+        setIsFounder(false)
+        setCanManageConferences(false)
       }
     }
     getUser()
@@ -71,11 +90,8 @@ export function Header() {
     <header className="bg-background border-b border-border sticky top-0 z-50 shadow-sm">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-              <Globe className="w-6 h-6 text-primary-foreground" />
-            </div>
-            <h1 className="text-xl md:text-2xl font-bold text-foreground">MUNX NIS</h1>
+          <Link href="/" className="flex items-center gap-2">
+            <h1 className="text-xl md:text-2xl font-bold text-foreground tracking-tight">MUN Kazakhstan</h1>
           </Link>
 
           <nav className="hidden md:flex items-center gap-6">
