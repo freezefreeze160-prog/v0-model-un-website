@@ -62,17 +62,25 @@ export default function CalendarPage() {
   }, [])
 
   function parseConferenceDate(conf: Conference): ParsedConference {
-    const dateMatch = conf.date_ru?.match(/(\d+)[-–](\d+)\s+(\w+)\s+(\d{4})/)
-    if (dateMatch) {
-      const [, startDay, endDay, month, year] = dateMatch
+    const dateStr = conf.date_en || conf.date_ru || conf.date_kk
+    console.log("[v0] Parsing conference date:", conf.name_en, dateStr)
+    
+    // Try multiple formats
+    // Format 1: "19-20 апреля 2026" (Russian range)
+    const rangeMatch = dateStr?.match(/(\d+)[-–](\d+)\s+(\w+)\s+(\d{4})/)
+    if (rangeMatch) {
+      const [, startDay, endDay, month, year] = rangeMatch
       const monthMap: { [key: string]: number } = {
         января: 0, февраля: 1, марта: 2, апреля: 3, мая: 4, июня: 5,
         июля: 6, августа: 7, сентября: 8, октября: 9, ноября: 10, декабря: 11,
+        january: 0, february: 1, march: 2, april: 3, may: 4, june: 5,
+        july: 6, august: 7, september: 8, october: 9, november: 10, december: 11,
       }
       const monthNum = monthMap[month.toLowerCase()]
       if (monthNum !== undefined) {
         const startDate = new Date(Number.parseInt(year), monthNum, Number.parseInt(startDay))
         const endDate = new Date(Number.parseInt(year), monthNum, Number.parseInt(endDay))
+        console.log("[v0] Parsed range:", startDate, "to", endDate)
         return {
           ...conf,
           startDate,
@@ -84,6 +92,34 @@ export default function CalendarPage() {
         }
       }
     }
+    
+    // Format 2: "April 19, 2026" (English single day)
+    const singleDayMatch = dateStr?.match(/(\w+)\s+(\d+),?\s+(\d{4})/)
+    if (singleDayMatch) {
+      const [, month, day, year] = singleDayMatch
+      const monthMap: { [key: string]: number } = {
+        january: 0, february: 1, march: 2, april: 3, may: 4, june: 5,
+        july: 6, august: 7, september: 8, october: 9, november: 10, december: 11,
+        января: 0, февраля: 1, марта: 2, апреля: 3, мая: 4, июня: 5,
+        июля: 6, августа: 7, сентября: 8, октября: 9, ноября: 10, декабря: 11,
+      }
+      const monthNum = monthMap[month.toLowerCase()]
+      if (monthNum !== undefined) {
+        const date = new Date(Number.parseInt(year), monthNum, Number.parseInt(day))
+        console.log("[v0] Parsed single day:", date)
+        return {
+          ...conf,
+          startDate: date,
+          endDate: date,
+          startDay: Number.parseInt(day),
+          endDay: Number.parseInt(day),
+          month: monthNum,
+          year: Number.parseInt(year)
+        }
+      }
+    }
+    
+    console.log("[v0] Could not parse date:", dateStr)
     return { ...conf, startDate: null, endDate: null, startDay: null, endDay: null, month: null, year: null }
   }
 

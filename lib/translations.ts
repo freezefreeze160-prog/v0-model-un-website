@@ -229,6 +229,11 @@ export const translations = {
     secretariat_desc: "Познакомьтесь с организаторами конференций Model UN в разных городах Казахстана",
     select_city: "Выберите город",
     no_secretariat_for_city: "Пока нет секретариата для этого города",
+    team_founders: "Основатели",
+    team_content_managers: "Контент менеджеры",
+    team_designers: "Дизайнеры",
+    team_partnership_managers: "Менеджеры по партнёрству",
+    team_other: "Другие члены команды",
 
     // Dashboard
     welcome_back: "Добро пожаловать!",
@@ -489,6 +494,11 @@ export const translations = {
     secretariat_desc: "Қазақстанның әртүрлі қалаларындағы Model UN конференцияларының ұйымдастырушыларымен танысыңыз",
     select_city: "Қаланы таңдаңыз",
     no_secretariat_for_city: "Бұл қала үшін әзірге хатшылық жоқ",
+    team_founders: "Құрылтайшылар",
+    team_content_managers: "Контент менеджерлері",
+    team_designers: "Дизайнерлер",
+    team_partnership_managers: "Серіктестік менеджерлері",
+    team_other: "Басқа команда мүшелері",
 
     // Dashboard
     welcome_back: "Қош келдіңіз!",
@@ -748,6 +758,11 @@ export const translations = {
     secretariat_desc: "Meet the organizers of Model UN conferences in different cities of Kazakhstan",
     select_city: "Select city",
     no_secretariat_for_city: "No secretariat yet for this city",
+    team_founders: "Founders",
+    team_content_managers: "Content Managers",
+    team_designers: "Designers",
+    team_partnership_managers: "Partnership Managers",
+    team_other: "Other Team Members",
 
     // Dashboard
     welcome_back: "Welcome back!",
