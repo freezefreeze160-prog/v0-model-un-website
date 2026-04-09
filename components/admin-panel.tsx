@@ -22,6 +22,8 @@ interface Profile {
   region: number | null
   phone: string | null
   supervisor_id: string | null
+  is_team_member: boolean
+  team_role: string | null
 }
 
 const ROLE_OPTIONS = [
@@ -175,6 +177,37 @@ export default function AdminPanel() {
     }
   }
 
+  async function updateTeamMember(userId: string, isMember: boolean, customRole?: string) {
+    setUpdatingUserId(userId)
+    try {
+      const { data, error } = await supabase.rpc('admin_update_team_member', {
+        target_user_id: userId,
+        is_member: isMember,
+        custom_role: customRole || null
+      })
+
+      if (error) {
+        console.error("[v0] Team member update error:", error)
+        alert(`Error: ${error.message}`)
+        return
+      }
+
+      if (data === false) {
+        alert("Permission denied - only founder can manage team members")
+        return
+      }
+
+      // Update local state
+      setUsers(prev => prev.map(u => u.user_id === userId ? { ...u, is_team_member: isMember, team_role: customRole || null } : u))
+      setFilteredUsers(prev => prev.map(u => u.user_id === userId ? { ...u, is_team_member: isMember, team_role: customRole || null } : u))
+    } catch (error) {
+      console.error("[v0] Error updating team member:", error)
+      alert("Error updating team member")
+    } finally {
+      setUpdatingUserId(null)
+    }
+  }
+
   async function deleteUser(userId: string) {
     setDeletingUserId(userId)
     try {
@@ -311,6 +344,38 @@ export default function AdminPanel() {
                       </SelectContent>
                     </Select>
                   )}
+
+                  {/* Team Member Management */}
+                  <div className="flex items-center gap-2 p-2 border rounded-lg">
+                    <input
+                      type="checkbox"
+                      id={`team-${user.user_id}`}
+                      checked={user.is_team_member || false}
+                      onChange={(e) => {
+                        const isMember = e.target.checked
+                        if (!isMember) {
+                          updateTeamMember(user.user_id, false)
+                        } else {
+                          const role = window.prompt(
+                            language === "ru" ? "Введите роль члена команды:" : 
+                            language === "kk" ? "Команда мүшесінің рөлін енгізіңіз:" : 
+                            "Enter team member role:"
+                          )
+                          if (role) {
+                            updateTeamMember(user.user_id, true, role)
+                          }
+                        }
+                      }}
+                      disabled={updatingUserId === user.user_id}
+                      className="w-4 h-4"
+                    />
+                    <label htmlFor={`team-${user.user_id}`} className="text-sm cursor-pointer">
+                      {language === "ru" ? "Член команды" : language === "kk" ? "Команда мүшесі" : "Team Member"}
+                    </label>
+                    {user.team_role && (
+                      <span className="text-xs text-muted-foreground ml-2">({user.team_role})</span>
+                    )}
+                  </div>
 
                   {confirmDelete === user.user_id ? (
                     <div className="flex gap-2">

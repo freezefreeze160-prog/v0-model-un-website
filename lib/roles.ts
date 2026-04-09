@@ -11,6 +11,8 @@ export interface UserProfile {
   role: UserRole
   region?: number
   supervisor_id?: string | null
+  is_team_member?: boolean
+  team_role?: string | null
   created_at: string
   updated_at: string
 }

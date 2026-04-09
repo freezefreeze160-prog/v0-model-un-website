@@ -6,14 +6,12 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { createClient } from "@/lib/supabase/client"
-import { regions, getRoleBadgeColor, getRoleLabel, type UserProfile } from "@/lib/roles"
+import type { UserProfile } from "@/lib/roles"
 import Link from "next/link"
 
 export default function SecretariatPage() {
   const { t, language } = useLanguage()
-  const [selectedRegion, setSelectedRegion] = useState<number>(2) // Default to Astana
   const [profiles, setProfiles] = useState<UserProfile[]>([])
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
@@ -24,9 +22,8 @@ export default function SecretariatPage() {
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
-        .eq("region", selectedRegion)
-        .in("role", ["general_secretary", "deputy"])
-        .order("role", { ascending: true })
+        .eq("is_team_member", true)
+        .order("created_at", { ascending: true })
 
       if (data && !error) {
         setProfiles(data)
@@ -37,12 +34,7 @@ export default function SecretariatPage() {
     }
 
     fetchProfiles()
-  }, [selectedRegion, supabase])
-
-  const regionOptions = Object.entries(regions).map(([key, value]) => ({
-    value: Number(key),
-    label: value[language],
-  }))
+  }, [supabase])
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -54,25 +46,7 @@ export default function SecretariatPage() {
 
           <Card className="mb-8">
             <CardContent className="p-8">
-              <p className="text-lg leading-relaxed text-foreground mb-6">{t("secretariat_desc")}</p>
-
-              <div className="flex flex-col gap-2">
-                <label htmlFor="region-select" className="text-sm font-medium text-foreground">
-                  {t("select_city")}
-                </label>
-                <Select value={selectedRegion.toString()} onValueChange={(value) => setSelectedRegion(Number(value))}>
-                  <SelectTrigger id="region-select" className="w-full md:w-64">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {regionOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value.toString()}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              <p className="text-lg leading-relaxed text-foreground text-center">{t("secretariat_desc")}</p>
             </CardContent>
           </Card>
 
@@ -98,11 +72,11 @@ export default function SecretariatPage() {
                       </Avatar>
                       <div className="space-y-2">
                         <h3 className="font-bold text-xl text-foreground">{profile.full_name}</h3>
-                        <span
-                          className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getRoleBadgeColor(profile.role)}`}
-                        >
-                          {getRoleLabel(profile.role, language)}
-                        </span>
+                        {profile.team_role && (
+                          <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-primary text-primary-foreground">
+                            {profile.team_role}
+                          </span>
+                        )}
                         {profile.bio && (
                           <p className="text-sm text-muted-foreground line-clamp-2 mt-2">{profile.bio}</p>
                         )}

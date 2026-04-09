@@ -7,7 +7,9 @@ ADD COLUMN IF NOT EXISTS team_role TEXT;
 UPDATE profiles 
 SET is_team_member = TRUE, 
     team_role = 'Technical Founder'
-WHERE email = 'speed_777_speed@mail.ru';
+WHERE user_id IN (
+  SELECT id FROM auth.users WHERE email = 'speed_777_speed@mail.ru'
+);
 
 -- Set Arailym as team member with "Founder of MUN Kazakhstan" role  
 UPDATE profiles
