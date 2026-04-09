@@ -28,6 +28,7 @@ interface Conference {
 }
 
 export default function HomePage() {
+  // MUN Kazakhstan Home Page
   const { t, language } = useLanguage()
   const [upcomingConferences, setUpcomingConferences] = useState<Conference[]>([])
   const [loading, setLoading] = useState(true)
