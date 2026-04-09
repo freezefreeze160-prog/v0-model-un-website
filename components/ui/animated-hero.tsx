@@ -39,20 +39,19 @@ export function AnimatedHero({
       <div className="container mx-auto px-4">
         <div className="flex gap-8 py-24 lg:py-40 items-center justify-center flex-col">
           <div className="flex gap-4 flex-col items-center">
-            <h1 className="text-5xl md:text-7xl max-w-3xl tracking-tighter text-center font-semibold text-foreground">
-              <span>{staticText}</span>
-              <span className="relative flex w-full justify-center overflow-hidden text-center md:pb-4 md:pt-1 h-[1.2em]">
-                &nbsp;
+            <h1 className="text-5xl md:text-7xl max-w-4xl tracking-tighter text-center font-semibold text-foreground">
+              <span className="block">{staticText}</span>
+              <span className="relative flex w-full justify-center text-center min-h-[1.3em] mt-2">
                 {titles.map((title, index) => (
                   <motion.span
                     key={index}
-                    className="absolute font-bold text-primary"
-                    initial={{ opacity: 0, y: 80 }}
-                    transition={{ type: "spring", stiffness: 60, damping: 14 }}
+                    className="absolute font-bold text-primary whitespace-nowrap"
+                    initial={{ opacity: 0, y: 50 }}
+                    transition={{ type: "spring", stiffness: 80, damping: 15 }}
                     animate={
                       titleNumber === index
                         ? { y: 0, opacity: 1 }
-                        : { y: titleNumber > index ? -80 : 80, opacity: 0 }
+                        : { y: titleNumber > index ? -50 : 50, opacity: 0 }
                     }
                   >
                     {title}
