@@ -9,7 +9,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { useLanguage } from "@/contexts/language-context"
-import { loginAction } from "@/lib/auth-actions"
+import { createBrowserClient } from "@/lib/supabase/client"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -25,16 +25,29 @@ export default function LoginPage() {
     setError(null)
 
     try {
-      const result = await loginAction(email, password)
-      if (result.success) {
+      const supabase = createBrowserClient()
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (signInError) {
+        if (signInError.message.includes("Invalid login credentials")) {
+          setError(t("error_invalid_credentials" as any) || "Invalid email or password")
+        } else {
+          setError(signInError.message)
+        }
+        setIsLoading(false)
+        return
+      }
+
+      if (data.user) {
         router.push("/dashboard")
         router.refresh()
-      } else {
-        const errorMessage = result.error ? t(result.error as any) : t("login_error")
-        setError(errorMessage)
       }
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : t("login_error"))
+      console.error("[v0] Login error:", error)
+      setError(error instanceof Error ? error.message : "An error occurred")
     } finally {
       setIsLoading(false)
     }
