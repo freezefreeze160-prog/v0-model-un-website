@@ -5,7 +5,7 @@ export const translations = {
     // Navigation
     home: "Главная",
     about: "О нас",
-    secretariat: "Секретариат",
+    secretariat: "Команда MUN Kazakhstan",
     news: "Новости",
     register: "Регистрация",
     search_users: "Поиск пользователей",
@@ -224,8 +224,8 @@ export const translations = {
     about_cta_title: "Готовы присоединиться?",
     about_cta_desc: "Станьте частью международного сообщества молодых дипломатов и лидеров",
 
-    // Secretariat
-    secretariat_title: "Секретариат",
+    // Team
+    secretariat_title: "Команда MUN Kazakhstan",
     secretariat_desc: "Познакомьтесь с организаторами конференций Model UN в разных городах Казахстана",
     select_city: "Выберите город",
     no_secretariat_for_city: "Пока нет секретариата для этого города",
@@ -265,7 +265,7 @@ export const translations = {
     // Navigation
     home: "Басты бет",
     about: "Біз туралы",
-    secretariat: "Хатшылық",
+    secretariat: "MUN Kazakhstan командасы",
     news: "Жаңалықтар",
     register: "Тіркелу",
     search_users: "Пайдаланушыларды іздеу",
@@ -484,8 +484,8 @@ export const translations = {
     about_cta_title: "Қосылуға дайынсыз ба?",
     about_cta_desc: "Жас дипломаттар мен көшбасшылардың халықаралық қауымдастығының бөлігі болыңыз",
 
-    // Secretariat
-    secretariat_title: "Хатшылық",
+    // Team
+    secretariat_title: "MUN Kazakhstan командасы",
     secretariat_desc: "Қазақстанның әртүрлі қалаларындағы Model UN конференцияларының ұйымдастырушыларымен танысыңыз",
     select_city: "Қаланы таңдаңыз",
     no_secretariat_for_city: "Бұл қала үшін әзірге хатшылық жоқ",
@@ -525,7 +525,7 @@ export const translations = {
     // Navigation
     home: "Home",
     about: "About",
-    secretariat: "Secretariat",
+    secretariat: "MUN Kazakhstan Team",
     news: "News",
     register: "Register",
     search_users: "Search users",
@@ -743,8 +743,8 @@ export const translations = {
     about_cta_title: "Ready to join?",
     about_cta_desc: "Become part of the international community of young diplomats and leaders",
 
-    // Secretariat
-    secretariat_title: "Secretariat",
+    // Team
+    secretariat_title: "MUN Kazakhstan Team",
     secretariat_desc: "Meet the organizers of Model UN conferences in different cities of Kazakhstan",
     select_city: "Select city",
     no_secretariat_for_city: "No secretariat yet for this city",
