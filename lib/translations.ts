@@ -209,11 +209,26 @@ export const translations = {
     // About
     about_title: "О Model UN",
     about_desc: "Узнайте больше о программе Model UN по всему Казахстану",
+    about_international: "Международный опыт",
+    about_international_desc: "Участвуйте в конференциях по всему миру и представляйте различные страны",
+    about_diplomacy: "Дипломатия",
+    about_diplomacy_desc: "Развивайте навыки переговоров, дипломатии и международного сотрудничества",
+    about_critical_thinking: "Критическое мышление",
+    about_critical_thinking_desc: "Анализируйте глобальные проблемы и разрабатывайте инновационные решения",
+    about_networking: "Нетворкинг",
+    about_networking_desc: "Знакомьтесь с единомышленниками из разных стран и создавайте связи",
+    about_leadership: "Лидерство",
+    about_leadership_desc: "Станьте лидером и вдохновляйте других на позитивные изменения",
+    about_achievements: "Достижения",
+    about_achievements_desc: "Получайте награды и признание за ваш вклад в решение мировых проблем",
+    about_cta_title: "Готовы присоединиться?",
+    about_cta_desc: "Станьте частью международного сообщества молодых дипломатов и лидеров",
 
     // Secretariat
     secretariat_title: "Секретариат",
     secretariat_desc: "Познакомьтесь с организаторами конференций Model UN в разных городах Казахстана",
     select_city: "Выберите город",
+    no_secretariat_for_city: "Пока нет секретариата для этого города",
 
     // Dashboard
     welcome_back: "Добро пожаловать!",
@@ -454,11 +469,26 @@ export const translations = {
     // About
     about_title: "Model UN туралы",
     about_desc: "Қазақстан бойынша Model UN бағдарламасы туралы көбірек біліңіз",
+    about_international: "Халықаралық тәжірибе",
+    about_international_desc: "Бүкіл әлемдегі конференцияларға қатысып, әртүрлі елдерді ұсыныңыз",
+    about_diplomacy: "Дипломатия",
+    about_diplomacy_desc: "Келіссөз, дипломатия және халықаралық ынтымақтастық дағдыларын дамытыңыз",
+    about_critical_thinking: "Сыни ойлау",
+    about_critical_thinking_desc: "Жаһандық мәселелерді талдаңыз және инновациялық шешімдер әзірлеңіз",
+    about_networking: "Желілеу",
+    about_networking_desc: "Әртүрлі елдерден ойластары бірдей адамдармен танысыңыз және байланыс құрыңыз",
+    about_leadership: "Көшбасшылық",
+    about_leadership_desc: "Көшбасшы болыңыз және басқаларды оң өзгерістерге шабыттандырыңыз",
+    about_achievements: "Жетістіктер",
+    about_achievements_desc: "Әлемдік проблемаларды шешуге қосқан үлесіңіз үшін марапаттар мен мойындау алыңыз",
+    about_cta_title: "Қосылуға дайынсыз ба?",
+    about_cta_desc: "Жас дипломаттар мен көшбасшылардың халықаралық қауымдастығының бөлігі болыңыз",
 
     // Secretariat
     secretariat_title: "Хатшылық",
     secretariat_desc: "Қазақстанның әртүрлі қалаларындағы Model UN конференцияларының ұйымдастырушыларымен танысыңыз",
     select_city: "Қаланы таңдаңыз",
+    no_secretariat_for_city: "Бұл қала үшін әзірге хатшылық жоқ",
 
     // Dashboard
     welcome_back: "Қош келдіңіз!",
@@ -698,11 +728,26 @@ export const translations = {
     // About
     about_title: "About Model UN",
     about_desc: "Learn more about the Model UN program across Kazakhstan",
+    about_international: "International Experience",
+    about_international_desc: "Participate in conferences around the world and represent different countries",
+    about_diplomacy: "Diplomacy",
+    about_diplomacy_desc: "Develop negotiation, diplomacy and international cooperation skills",
+    about_critical_thinking: "Critical Thinking",
+    about_critical_thinking_desc: "Analyze global issues and develop innovative solutions",
+    about_networking: "Networking",
+    about_networking_desc: "Meet like-minded people from different countries and build connections",
+    about_leadership: "Leadership",
+    about_leadership_desc: "Become a leader and inspire others to make positive changes",
+    about_achievements: "Achievements",
+    about_achievements_desc: "Receive awards and recognition for your contribution to solving global problems",
+    about_cta_title: "Ready to join?",
+    about_cta_desc: "Become part of the international community of young diplomats and leaders",
 
     // Secretariat
     secretariat_title: "Secretariat",
     secretariat_desc: "Meet the organizers of Model UN conferences in different cities of Kazakhstan",
     select_city: "Select city",
+    no_secretariat_for_city: "No secretariat yet for this city",
 
     // Dashboard
     welcome_back: "Welcome back!",

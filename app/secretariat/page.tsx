@@ -82,7 +82,7 @@ export default function SecretariatPage() {
             </div>
           ) : profiles.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-muted-foreground">Пока нет секретариата для этого города</p>
+              <p className="text-muted-foreground">{t("no_secretariat_for_city")}</p>
             </div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -92,7 +92,7 @@ export default function SecretariatPage() {
                     <CardContent className="p-6 flex flex-col items-center text-center gap-4">
                       <Avatar className="h-32 w-32">
                         <AvatarImage src={profile.photo_url || undefined} alt={profile.full_name} />
-                        <AvatarFallback className="bg-[#0055aa] text-white text-3xl">
+                        <AvatarFallback className="bg-primary text-white text-3xl">
                           {profile.full_name?.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
