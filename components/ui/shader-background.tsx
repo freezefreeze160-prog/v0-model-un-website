@@ -25,7 +25,7 @@ const ShaderBackground = () => {
     const float majorLineFrequency = 5.0;
     const float minorLineFrequency = 1.0;
     const float scale = 5.0;
-    const vec4 lineColor = vec4(0.18, 0.55, 0.34, 1.0);
+    const vec4 lineColor = vec4(0.2, 0.4, 0.85, 1.0);
     const float minLineWidth = 0.01;
     const float maxLineWidth = 0.2;
     const float lineSpeed = 1.0 * overallSpeed;
@@ -64,8 +64,8 @@ const ShaderBackground = () => {
       space.x += random(space.y * warpFrequency + iTime * warpSpeed + 2.0) * warpAmplitude * horizontalFade;
 
       vec4 lines = vec4(0.0);
-      vec4 bgColor1 = vec4(0.04, 0.08, 0.06, 1.0);
-      vec4 bgColor2 = vec4(0.06, 0.12, 0.09, 1.0);
+      vec4 bgColor1 = vec4(0.03, 0.06, 0.12, 1.0);
+      vec4 bgColor2 = vec4(0.05, 0.08, 0.16, 1.0);
 
       for(int l = 0; l < linesPerGroup; l++) {
         float normalizedLineIndex = float(l) / float(linesPerGroup);
