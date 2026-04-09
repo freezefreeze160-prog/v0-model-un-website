@@ -44,6 +44,8 @@ export default function SecretariatPage() {
     if (role.includes("content")) return "content"
     if (role.includes("design")) return "designers"
     if (role.includes("partnership")) return "partnership"
+    if (role.includes("marketing")) return "other"
+    if (role.includes("community")) return "other"
     return "other"
   }
 
@@ -58,28 +60,41 @@ export default function SecretariatPage() {
   const renderTeamSection = (title: string, members: UserProfile[]) => {
     if (members.length === 0) return null
     return (
-      <div key={title} className="mb-12">
-        <h2 className="text-3xl font-bold mb-6 text-foreground">{title}</h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div key={title} className="mb-16">
+        <div className="text-center mb-10">
+          <h2 className="text-4xl font-bold text-foreground mb-3 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+            {title}
+          </h2>
+          <div className="w-24 h-1 bg-gradient-to-r from-transparent via-primary to-transparent mx-auto"></div>
+        </div>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 justify-items-center">
           {members.map((profile) => (
-            <Link key={profile.id} href={`/profile/${profile.user_id}`}>
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
-                <CardContent className="p-6 flex flex-col items-center text-center gap-4">
-                  <Avatar className="h-32 w-32">
-                    <AvatarImage src={profile.photo_url || undefined} alt={profile.full_name} />
-                    <AvatarFallback className="bg-primary text-white text-3xl">
-                      {profile.full_name?.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="space-y-2">
-                    <h3 className="font-bold text-xl text-foreground">{profile.full_name}</h3>
-                    {profile.team_role && (
-                      <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-primary text-primary-foreground">
-                        {profile.team_role}
-                      </span>
-                    )}
+            <Link key={profile.id} href={`/profile/${profile.user_id}`} className="w-full max-w-sm">
+              <Card className="group hover:shadow-2xl hover:scale-105 transition-all duration-300 cursor-pointer h-full border-2 hover:border-primary/50">
+                <CardContent className="p-8 flex flex-col items-center text-center gap-5">
+                  <div className="relative">
+                    <Avatar className="h-36 w-36 ring-4 ring-primary/10 group-hover:ring-primary/30 transition-all">
+                      <AvatarImage src={profile.photo_url || undefined} alt={profile.full_name} />
+                      <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-white text-4xl font-bold">
+                        {profile.full_name?.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-background px-3 py-1 rounded-full shadow-lg border-2 border-primary/20">
+                      {profile.team_role && (
+                        <span className="text-xs font-semibold text-primary whitespace-nowrap">
+                          {profile.team_role}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="space-y-2 mt-4">
+                    <h3 className="font-bold text-2xl text-foreground group-hover:text-primary transition-colors">
+                      {profile.full_name}
+                    </h3>
                     {profile.bio && (
-                      <p className="text-sm text-muted-foreground line-clamp-2 mt-2">{profile.bio}</p>
+                      <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed px-2">
+                        {profile.bio}
+                      </p>
                     )}
                   </div>
                 </CardContent>
@@ -95,15 +110,16 @@ export default function SecretariatPage() {
     <div className="min-h-screen flex flex-col">
       <Header />
 
-      <main className="flex-1 py-12">
-        <div className="container mx-auto px-4 max-w-6xl">
-          <h1 className="text-4xl font-bold mb-8 text-center text-foreground">{t("secretariat_title")}</h1>
-
-          <Card className="mb-8">
-            <CardContent className="p-8">
-              <p className="text-lg leading-relaxed text-foreground text-center">{t("secretariat_desc")}</p>
-            </CardContent>
-          </Card>
+      <main className="flex-1 py-16 bg-gradient-to-b from-background to-muted/20">
+        <div className="container mx-auto px-4 max-w-7xl">
+          <div className="text-center mb-16">
+            <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent">
+              {t("secretariat_title")}
+            </h1>
+            <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+              {t("secretariat_desc")}
+            </p>
+          </div>
 
           {loading ? (
             <div className="text-center py-12">

@@ -346,34 +346,71 @@ export default function AdminPanel() {
                   )}
 
                   {/* Team Member Management */}
-                  <div className="flex items-center gap-2 p-2 border rounded-lg">
-                    <input
-                      type="checkbox"
-                      id={`team-${user.user_id}`}
-                      checked={user.is_team_member || false}
-                      onChange={(e) => {
-                        const isMember = e.target.checked
-                        if (!isMember) {
-                          updateTeamMember(user.user_id, false)
-                        } else {
-                          const role = window.prompt(
-                            language === "ru" ? "Введите роль члена команды:" : 
-                            language === "kk" ? "Команда мүшесінің рөлін енгізіңіз:" : 
-                            "Enter team member role:"
-                          )
-                          if (role) {
-                            updateTeamMember(user.user_id, true, role)
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id={`team-${user.user_id}`}
+                        checked={user.is_team_member || false}
+                        onChange={(e) => {
+                          const isMember = e.target.checked
+                          if (!isMember) {
+                            updateTeamMember(user.user_id, false)
+                          } else {
+                            // Default role when adding to team
+                            updateTeamMember(user.user_id, true, "Team Member")
                           }
-                        }
-                      }}
-                      disabled={updatingUserId === user.user_id}
-                      className="w-4 h-4"
-                    />
-                    <label htmlFor={`team-${user.user_id}`} className="text-sm cursor-pointer">
-                      {language === "ru" ? "Член команды" : language === "kk" ? "Команда мүшесі" : "Team Member"}
-                    </label>
-                    {user.team_role && (
-                      <span className="text-xs text-muted-foreground ml-2">({user.team_role})</span>
+                        }}
+                        disabled={updatingUserId === user.user_id}
+                        className="w-4 h-4"
+                      />
+                      <label htmlFor={`team-${user.user_id}`} className="text-sm cursor-pointer font-medium">
+                        {language === "ru" ? "Член команды" : language === "kk" ? "Команда мүшесі" : "Team Member"}
+                      </label>
+                    </div>
+                    
+                    {user.is_team_member && (
+                      <Select
+                        value={user.team_role || ""}
+                        onValueChange={(value) => updateTeamMember(user.user_id, true, value)}
+                        disabled={updatingUserId === user.user_id}
+                      >
+                        <SelectTrigger className="h-9">
+                          <SelectValue placeholder={language === "ru" ? "Выберите роль" : language === "kk" ? "Рөлді таңдаңыз" : "Select role"} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Technical Founder">
+                            {language === "ru" ? "Технический основатель" : language === "kk" ? "Техникалық құрылтайшы" : "Technical Founder"}
+                          </SelectItem>
+                          <SelectItem value="Founder of MUN Kazakhstan">
+                            {language === "ru" ? "Основатель MUN Kazakhstan" : language === "kk" ? "MUN Kazakhstan құрылтайшысы" : "Founder of MUN Kazakhstan"}
+                          </SelectItem>
+                          <SelectItem value="Content Manager">
+                            {language === "ru" ? "Контент менеджер" : language === "kk" ? "Контент менеджері" : "Content Manager"}
+                          </SelectItem>
+                          <SelectItem value="Lead Content Manager">
+                            {language === "ru" ? "Главный контент менеджер" : language === "kk" ? "Бас контент менеджері" : "Lead Content Manager"}
+                          </SelectItem>
+                          <SelectItem value="Designer">
+                            {language === "ru" ? "Дизайнер" : language === "kk" ? "Дизайнер" : "Designer"}
+                          </SelectItem>
+                          <SelectItem value="Lead Designer">
+                            {language === "ru" ? "Главный дизайнер" : language === "kk" ? "Бас дизайнер" : "Lead Designer"}
+                          </SelectItem>
+                          <SelectItem value="Partnership Manager">
+                            {language === "ru" ? "Менеджер по партнёрству" : language === "kk" ? "Серіктестік менеджері" : "Partnership Manager"}
+                          </SelectItem>
+                          <SelectItem value="Lead Partnership Manager">
+                            {language === "ru" ? "Главный менеджер по партнёрству" : language === "kk" ? "Бас серіктестік менеджері" : "Lead Partnership Manager"}
+                          </SelectItem>
+                          <SelectItem value="Marketing Manager">
+                            {language === "ru" ? "Маркетинг менеджер" : language === "kk" ? "Маркетинг менеджері" : "Marketing Manager"}
+                          </SelectItem>
+                          <SelectItem value="Community Manager">
+                            {language === "ru" ? "Менеджер сообщества" : language === "kk" ? "Қоғамдастық менеджері" : "Community Manager"}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
                     )}
                   </div>
 
