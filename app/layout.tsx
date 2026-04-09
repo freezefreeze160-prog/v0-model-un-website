@@ -7,8 +7,8 @@ import { ThemeProvider } from "@/contexts/theme-context"
 import { Suspense } from "react"
 import "./globals.css"
 
-const geistSans = Geist({ subsets: ["latin"] })
-const geistMono = Geist_Mono({ subsets: ["latin"] })
+const geistSans = Geist({ subsets: ["latin"], variable: "--font-sans" })
+const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono" })
 
 export const metadata: Metadata = {
   title: "MUNX Казахстан",
@@ -23,7 +23,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ru">
-      <body className={`font-sans ${geistSans.variable} ${geistMono.variable}`}>
+      <body className={`font-sans ${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Suspense fallback={<div>Loading...</div>}>
           <ThemeProvider>
             <LanguageProvider>{children}</LanguageProvider>
