@@ -1,7 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect, useMemo } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useLanguage } from "@/contexts/language-context"
 import { Header } from "@/components/header"
@@ -9,8 +8,34 @@ import { Footer } from "@/components/footer"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Inbox, Calendar, Mail, Phone, FileText, CheckCircle, XCircle, Users, Shuffle, Home } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
+  Inbox,
+  Calendar,
+  Mail,
+  Phone,
+  FileText,
+  CheckCircle,
+  XCircle,
+  Users,
+  Shuffle,
+  Home,
+  Search,
+  Download,
+  BarChart3,
+} from "lucide-react"
 import Link from "next/link"
+import { InboxAnalytics } from "@/components/inbox/inbox-analytics"
+import { downloadCsv, toCsv } from "@/lib/csv"
 
 interface DelegateApplication {
   id: string
@@ -57,7 +82,6 @@ interface ConferenceWithApplications {
 
 export default function InboxPage() {
   const { t, language } = useLanguage()
-  const router = useRouter()
   const supabase = createClient()
   const [conferences, setConferences] = useState<ConferenceWithApplications[]>([])
   const [loading, setLoading] = useState(true)
@@ -65,8 +89,16 @@ export default function InboxPage() {
   const [userRole, setUserRole] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
+  // Filters + bulk selection
+  const [searchQuery, setSearchQuery] = useState("")
+  const [statusFilter, setStatusFilter] = useState("all")
+  const [conferenceFilter, setConferenceFilter] = useState("all")
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [working, setWorking] = useState(false)
+
   useEffect(() => {
     loadApplications()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   async function loadApplications() {
@@ -77,12 +109,10 @@ export default function InboxPage() {
       } = await supabase.auth.getUser()
 
       if (authError) {
-        console.log("[v0] Auth error in inbox:", authError)
         setError("auth_error")
         setLoading(false)
         return
       }
-
       if (!user) {
         setError("not_logged_in")
         setLoading(false)
@@ -98,12 +128,10 @@ export default function InboxPage() {
         .single()
 
       if (profileError) {
-        console.log("[v0] Profile error in inbox:", profileError)
         setError("profile_not_found")
         setLoading(false)
         return
       }
-
       if (!profile || !["general_secretary", "founder", "admin"].includes(profile.role)) {
         setError("access_denied")
         setLoading(false)
@@ -113,13 +141,10 @@ export default function InboxPage() {
       setUserRole(profile.role)
 
       let conferencesData: any[] = []
-
       if (profile.role === "founder") {
-        // Founder sees all conferences
         const { data } = await supabase.from("user_conferences").select("*").order("created_at", { ascending: false })
         conferencesData = data || []
       } else {
-        // Others see only their own conferences
         const { data } = await supabase
           .from("user_conferences")
           .select("*")
@@ -150,17 +175,13 @@ export default function InboxPage() {
               .eq("conference_id", conf.id)
               .order("created_at", { ascending: false })
 
-            return {
-              ...conf,
-              applications: apps || [],
-              committees: committeesData || [],
-            }
+            return { ...conf, applications: apps || [], committees: committeesData || [] }
           }),
         )
         setConferences(conferencesWithApps)
       }
-    } catch (error) {
-      console.error("[v0] Error loading applications:", error)
+    } catch (err) {
+      console.error("[v0] Error loading applications:", err)
       setError("unknown_error")
     } finally {
       setLoading(false)
@@ -184,7 +205,6 @@ export default function InboxPage() {
         usedCountries[c.id] = new Set()
       })
 
-      // First pass: primary choice
       for (const app of approvedApps) {
         if (app.primary_committee && committeeCount[app.primary_committee.id] !== undefined) {
           const committee = sortedCommittees.find((c) => c.id === app.primary_committee!.id)
@@ -194,14 +214,8 @@ export default function InboxPage() {
           }
         }
       }
-
-      // Second pass: secondary choice
       for (const app of approvedApps) {
-        if (
-          !assignments[app.id] &&
-          app.secondary_committee &&
-          committeeCount[app.secondary_committee.id] !== undefined
-        ) {
+        if (!assignments[app.id] && app.secondary_committee && committeeCount[app.secondary_committee.id] !== undefined) {
           const committee = sortedCommittees.find((c) => c.id === app.secondary_committee!.id)
           if (committee && committeeCount[app.secondary_committee.id] < committee.capacity) {
             assignments[app.id] = app.secondary_committee.id
@@ -209,8 +223,6 @@ export default function InboxPage() {
           }
         }
       }
-
-      // Third pass: tertiary choice
       for (const app of approvedApps) {
         if (!assignments[app.id] && app.tertiary_committee && committeeCount[app.tertiary_committee.id] !== undefined) {
           const committee = sortedCommittees.find((c) => c.id === app.tertiary_committee!.id)
@@ -221,24 +233,18 @@ export default function InboxPage() {
         }
       }
 
-      // Assign countries
       const countryAssignments: { [appId: string]: string } = {}
-
       for (const [appId, committeeId] of Object.entries(assignments)) {
         const app = approvedApps.find((a) => a.id === appId)
         if (!app) continue
-
         if (app.assigned_country) {
           countryAssignments[appId] = app.assigned_country
           usedCountries[committeeId].add(app.assigned_country)
           continue
         }
-
         const committee = sortedCommittees.find((c) => c.id === committeeId)
         if (!committee || !committee.countries || committee.countries.length === 0) continue
-
         const availableCountries = committee.countries.filter((country) => !usedCountries[committeeId].has(country))
-
         if (availableCountries.length > 0) {
           const randomCountry = availableCountries[Math.floor(Math.random() * availableCountries.length)]
           countryAssignments[appId] = randomCountry
@@ -246,35 +252,45 @@ export default function InboxPage() {
         }
       }
 
-      // Update database
       const updates = Object.entries(assignments).map(([appId, committeeId]) => {
         const updateData: any = { assigned_committee_id: committeeId }
-        if (countryAssignments[appId]) {
-          updateData.assigned_country = countryAssignments[appId]
-        }
+        if (countryAssignments[appId]) updateData.assigned_country = countryAssignments[appId]
         return supabase.from("delegate_applications").update(updateData).eq("id", appId)
       })
 
       await Promise.all(updates)
-
       alert(t("assignment_complete"))
       await loadApplications()
-    } catch (error) {
-      console.error("[v0] Error in auto-assignment:", error)
-      alert("Error during assignment: " + (error as Error).message)
+    } catch (err) {
+      console.error("[v0] Error in auto-assignment:", err)
+      alert("Error during assignment: " + (err as Error).message)
     }
   }
 
   async function updateApplicationStatus(applicationId: string, status: string) {
     try {
       const { error } = await supabase.from("delegate_applications").update({ status }).eq("id", applicationId)
-
       if (error) throw error
-
-      alert(t("status_updated"))
       await loadApplications()
-    } catch (error) {
-      console.error("[v0] Error updating application status:", error)
+    } catch (err) {
+      console.error("[v0] Error updating application status:", err)
+    }
+  }
+
+  async function bulkUpdateStatus(status: string) {
+    if (selectedIds.size === 0) return
+    setWorking(true)
+    try {
+      const ids = Array.from(selectedIds)
+      const { error } = await supabase.from("delegate_applications").update({ status }).in("id", ids)
+      if (error) throw error
+      setSelectedIds(new Set())
+      await loadApplications()
+    } catch (err) {
+      console.error("[v0] Error in bulk update:", err)
+      alert("Error: " + (err as Error).message)
+    } finally {
+      setWorking(false)
     }
   }
 
@@ -282,54 +298,61 @@ export default function InboxPage() {
     try {
       const { error } = await supabase
         .from("user_conferences")
-        .update({
-          status: "published",
-          approved_by: userId,
-          approved_at: new Date().toISOString(),
-        })
+        .update({ status: "published", approved_by: userId, approved_at: new Date().toISOString() })
         .eq("id", conferenceId)
-
       if (error) throw error
-
       alert(t("conference_approved"))
       await loadApplications()
-    } catch (error) {
-      console.error("[v0] Error approving conference:", error)
+    } catch (err) {
+      console.error("[v0] Error approving conference:", err)
     }
   }
 
   async function rejectConference(conferenceId: string) {
     if (!confirm(t("confirm_reject_conference"))) return
-
     try {
       const { error } = await supabase.from("user_conferences").update({ status: "rejected" }).eq("id", conferenceId)
-
       if (error) throw error
-
       alert(t("conference_rejected"))
       await loadApplications()
-    } catch (error) {
-      console.error("[v0] Error rejecting conference:", error)
+    } catch (err) {
+      console.error("[v0] Error rejecting conference:", err)
     }
   }
 
-  function getConferenceName(conf: ConferenceWithApplications) {
-    return language === "ru" ? conf.name_ru : language === "kk" ? conf.name_kk : conf.name_en
-  }
+  const getConferenceName = (conf: ConferenceWithApplications) =>
+    language === "ru" ? conf.name_ru : language === "kk" ? conf.name_kk : conf.name_en
 
-  function getConferenceDate(conf: ConferenceWithApplications) {
-    return language === "ru" ? conf.date_ru : language === "kk" ? conf.date_kk : conf.date_en
-  }
-
-  const totalApplications = conferences.reduce((sum, conf) => sum + conf.applications.length, 0)
-  const pendingApplications = conferences.reduce(
-    (sum, conf) => sum + conf.applications.filter((app) => app.status === "pending").length,
-    0,
+  const publishedConferences = useMemo(
+    () => conferences.filter((c) => c.status === "published"),
+    [conferences],
   )
+
+  // Flatten applications with conference context for the management list
+  const flatApplications = useMemo(() => {
+    return publishedConferences.flatMap((conf) =>
+      conf.applications.map((app) => ({ app, conf })),
+    )
+  }, [publishedConferences])
+
+  const filteredApplications = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase()
+    return flatApplications.filter(({ app, conf }) => {
+      if (statusFilter !== "all" && app.status !== statusFilter) return false
+      if (conferenceFilter !== "all" && conf.id !== conferenceFilter) return false
+      if (q) {
+        const haystack = `${app.full_name} ${app.email} ${app.phone}`.toLowerCase()
+        if (!haystack.includes(q)) return false
+      }
+      return true
+    })
+  }, [flatApplications, searchQuery, statusFilter, conferenceFilter])
+
+  const totalApplications = flatApplications.length
+  const pendingApplications = flatApplications.filter(({ app }) => app.status === "pending").length
 
   function getCommitteeStats(conference: ConferenceWithApplications) {
     const stats: { [committeeId: string]: { assigned: number; capacity: number; name: string } } = {}
-
     conference.committees.forEach((c) => {
       stats[c.id] = {
         assigned: conference.applications.filter((app) => app.assigned_committee_id === c.id).length,
@@ -337,8 +360,53 @@ export default function InboxPage() {
         name: c.name,
       }
     })
-
     return stats
+  }
+
+  function toggleSelect(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  function toggleSelectAll() {
+    const visibleIds = filteredApplications.map(({ app }) => app.id)
+    const allSelected = visibleIds.length > 0 && visibleIds.every((id) => selectedIds.has(id))
+    setSelectedIds(allSelected ? new Set() : new Set(visibleIds))
+  }
+
+  function exportCsv() {
+    const headers = [
+      t("full_name"),
+      t("email"),
+      t("phone"),
+      t("conference"),
+      t("status"),
+      t("primary_choice"),
+      t("secondary_choice"),
+      t("tertiary_choice"),
+      t("assigned_committee"),
+      t("assigned_country"),
+      t("created_at"),
+    ]
+    const source = filteredApplications.length > 0 ? filteredApplications : flatApplications
+    const rows = source.map(({ app, conf }) => [
+      app.full_name,
+      app.email,
+      app.phone,
+      getConferenceName(conf),
+      t(app.status),
+      app.primary_committee?.name ?? "",
+      app.secondary_committee?.name ?? "",
+      app.tertiary_committee?.name ?? "",
+      conf.committees.find((c) => c.id === app.assigned_committee_id)?.name ?? "",
+      app.assigned_country ?? "",
+      new Date(app.created_at).toLocaleString(),
+    ])
+    downloadCsv(`applications-${new Date().toISOString().slice(0, 10)}.csv`, toCsv(headers, rows))
   }
 
   if (loading) {
@@ -346,8 +414,14 @@ export default function InboxPage() {
       <div className="min-h-screen flex flex-col">
         <Header />
         <main className="flex-1 py-12">
-          <div className="container mx-auto px-4">
-            <p className="text-center">{t("loading")}</p>
+          <div className="container mx-auto px-4 space-y-4">
+            <div className="h-10 w-64 animate-pulse rounded-lg bg-muted" />
+            <div className="grid grid-cols-2 gap-4 lg:grid-cols-6">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="h-24 animate-pulse rounded-xl bg-muted" />
+              ))}
+            </div>
+            <div className="h-64 animate-pulse rounded-xl bg-muted" />
           </div>
         </main>
         <Footer />
@@ -383,64 +457,17 @@ export default function InboxPage() {
     )
   }
 
+  const pendingConfs = conferences.filter((c) => c.status === "pending")
+  const visibleIds = filteredApplications.map(({ app }) => app.id)
+  const allVisibleSelected = visibleIds.length > 0 && visibleIds.every((id) => selectedIds.has(id))
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
 
       <main className="flex-1 py-12">
         <div className="container mx-auto px-4 max-w-6xl">
-          {/* Pending Conference Requests for Founder */}
-          {userRole === "founder" && conferences.filter((c) => c.status === "pending").length > 0 && (
-            <Card className="mb-6 border-yellow-500/50">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="h-5 w-5" />
-                  {t("conference_requests")}
-                </CardTitle>
-                <CardDescription>{t("pending_conference_requests")}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {conferences
-                    .filter((c) => c.status === "pending")
-                    .map((conf) => (
-                      <div key={conf.id} className="border rounded-lg p-4 space-y-3">
-                        <div>
-                          <p className="font-semibold text-lg">{getConferenceName(conf)}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {getConferenceDate(conf)} • {conf.location}
-                          </p>
-                          {conf.registration_fee_amount && (
-                            <p className="text-sm font-medium text-green-600 mt-1">
-                              {t("registration_fee")}: {conf.registration_fee_amount} {conf.registration_fee_currency}
-                            </p>
-                          )}
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {t("committees")}: {conf.committees.length}
-                          </p>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            onClick={() => approveConference(conf.id)}
-                            className="bg-green-600 hover:bg-green-700"
-                          >
-                            <CheckCircle className="h-4 w-4 mr-1" />
-                            {t("approve_conference")}
-                          </Button>
-                          <Button size="sm" variant="destructive" onClick={() => rejectConference(conf.id)}>
-                            <XCircle className="h-4 w-4 mr-1" />
-                            {t("reject_conference")}
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          <div className="mb-8 flex items-center justify-between">
+          <div className="mb-8 flex items-center justify-between gap-4">
             <div>
               <h1 className="text-4xl font-bold mb-2 flex items-center gap-3">
                 <Inbox className="w-8 h-8" />
@@ -458,7 +485,53 @@ export default function InboxPage() {
             </Button>
           </div>
 
-          {conferences.filter((c) => c.status === "published").length === 0 ? (
+          {/* Pending conference requests (founder) */}
+          {userRole === "founder" && pendingConfs.length > 0 && (
+            <Card className="mb-6 border-yellow-500/50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  {t("conference_requests")}
+                </CardTitle>
+                <CardDescription>{t("pending_conference_requests")}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {pendingConfs.map((conf) => (
+                    <div key={conf.id} className="border rounded-lg p-4 space-y-3">
+                      <div>
+                        <p className="font-semibold text-lg">{getConferenceName(conf)}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {(language === "ru" ? conf.date_ru : language === "kk" ? conf.date_kk : conf.date_en)} •{" "}
+                          {conf.location}
+                        </p>
+                        {conf.registration_fee_amount && (
+                          <p className="text-sm font-medium text-primary mt-1">
+                            {t("registration_fee")}: {conf.registration_fee_amount} {conf.registration_fee_currency}
+                          </p>
+                        )}
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {t("committees")}: {conf.committees.length}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="sm" onClick={() => approveConference(conf.id)}>
+                          <CheckCircle className="h-4 w-4 mr-1" />
+                          {t("approve_conference")}
+                        </Button>
+                        <Button size="sm" variant="destructive" onClick={() => rejectConference(conf.id)}>
+                          <XCircle className="h-4 w-4 mr-1" />
+                          {t("reject_conference")}
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {publishedConferences.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
                 <Inbox className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
@@ -469,159 +542,261 @@ export default function InboxPage() {
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-8">
-              {conferences
-                .filter((c) => c.status === "published")
-                .map((conf) => (
+            <Tabs defaultValue="overview" className="w-full">
+              <TabsList className="mb-6">
+                <TabsTrigger value="overview">
+                  <BarChart3 className="h-4 w-4 mr-2" />
+                  {t("overview")}
+                </TabsTrigger>
+                <TabsTrigger value="applications">
+                  <Users className="h-4 w-4 mr-2" />
+                  {t("applications")}
+                </TabsTrigger>
+                <TabsTrigger value="committees">
+                  <FileText className="h-4 w-4 mr-2" />
+                  {t("committees")}
+                </TabsTrigger>
+              </TabsList>
+
+              {/* Overview: analytics */}
+              <TabsContent value="overview">
+                <InboxAnalytics conferences={conferences} />
+              </TabsContent>
+
+              {/* Applications: filters + bulk + list */}
+              <TabsContent value="applications" className="space-y-4">
+                <Card>
+                  <CardContent className="flex flex-col gap-3 p-4 md:flex-row md:items-center">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        placeholder={t("search_applications")}
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-9"
+                      />
+                    </div>
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <SelectTrigger className="w-full md:w-44">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">{t("all_statuses")}</SelectItem>
+                        <SelectItem value="pending">{t("pending")}</SelectItem>
+                        <SelectItem value="approved">{t("approved")}</SelectItem>
+                        <SelectItem value="rejected">{t("rejected")}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select value={conferenceFilter} onValueChange={setConferenceFilter}>
+                      <SelectTrigger className="w-full md:w-56">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">{t("all_conferences")}</SelectItem>
+                        {publishedConferences.map((c) => (
+                          <SelectItem key={c.id} value={c.id}>
+                            {getConferenceName(c)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button variant="outline" onClick={exportCsv}>
+                      <Download className="h-4 w-4 mr-2" />
+                      {t("export_csv")}
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                {/* Bulk action bar */}
+                <div className="flex flex-wrap items-center gap-3 rounded-xl border bg-muted/40 px-4 py-3">
+                  <label className="flex items-center gap-2 text-sm">
+                    <Checkbox checked={allVisibleSelected} onCheckedChange={toggleSelectAll} />
+                    {t("select_all")}
+                  </label>
+                  <span className="text-sm text-muted-foreground">
+                    {selectedIds.size} {t("selected")}
+                  </span>
+                  <div className="ml-auto flex gap-2">
+                    <Button
+                      size="sm"
+                      disabled={selectedIds.size === 0 || working}
+                      onClick={() => bulkUpdateStatus("approved")}
+                    >
+                      <CheckCircle className="h-4 w-4 mr-1" />
+                      {t("approve_selected")}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      disabled={selectedIds.size === 0 || working}
+                      onClick={() => bulkUpdateStatus("rejected")}
+                    >
+                      <XCircle className="h-4 w-4 mr-1" />
+                      {t("reject_selected")}
+                    </Button>
+                  </div>
+                </div>
+
+                {filteredApplications.length === 0 ? (
+                  <Card>
+                    <CardContent className="py-12 text-center text-muted-foreground">{t("no_applications")}</CardContent>
+                  </Card>
+                ) : (
+                  <div className="space-y-3">
+                    {filteredApplications.map(({ app, conf }) => (
+                      <Card key={app.id} className={selectedIds.has(app.id) ? "border-primary" : undefined}>
+                        <CardContent className="p-5">
+                          <div className="flex gap-4">
+                            <Checkbox
+                              className="mt-1"
+                              checked={selectedIds.has(app.id)}
+                              onCheckedChange={() => toggleSelect(app.id)}
+                            />
+                            <div className="flex-1 space-y-3">
+                              <div className="flex items-start justify-between gap-3">
+                                <div>
+                                  <h4 className="text-lg font-semibold">{app.full_name}</h4>
+                                  <p className="text-xs text-muted-foreground">{getConferenceName(conf)}</p>
+                                  <div className="mt-2 space-y-1">
+                                    <p className="text-sm text-muted-foreground flex items-center gap-2">
+                                      <Mail className="w-4 h-4" />
+                                      {app.email}
+                                    </p>
+                                    <p className="text-sm text-muted-foreground flex items-center gap-2">
+                                      <Phone className="w-4 h-4" />
+                                      {app.phone}
+                                    </p>
+                                  </div>
+                                </div>
+                                <Badge
+                                  variant={
+                                    app.status === "approved"
+                                      ? "default"
+                                      : app.status === "rejected"
+                                        ? "destructive"
+                                        : "secondary"
+                                  }
+                                >
+                                  {t(app.status)}
+                                </Badge>
+                              </div>
+
+                              <div className="grid grid-cols-3 gap-2 text-sm">
+                                <div>
+                                  <p className="font-medium text-xs text-muted-foreground">{t("primary_choice")}</p>
+                                  <p>{app.primary_committee?.name || "-"}</p>
+                                </div>
+                                <div>
+                                  <p className="font-medium text-xs text-muted-foreground">{t("secondary_choice")}</p>
+                                  <p>{app.secondary_committee?.name || "-"}</p>
+                                </div>
+                                <div>
+                                  <p className="font-medium text-xs text-muted-foreground">{t("tertiary_choice")}</p>
+                                  <p>{app.tertiary_committee?.name || "-"}</p>
+                                </div>
+                              </div>
+
+                              {app.assigned_committee_id && (
+                                <div className="p-3 bg-primary/10 rounded-lg">
+                                  <p className="text-sm">
+                                    <span className="font-medium">{t("assigned_committee")}:</span>{" "}
+                                    {conf.committees.find((c) => c.id === app.assigned_committee_id)?.name}
+                                  </p>
+                                  {app.assigned_country && (
+                                    <p className="text-sm">
+                                      <span className="font-medium">{t("assigned_country")}:</span> {app.assigned_country}
+                                    </p>
+                                  )}
+                                </div>
+                              )}
+
+                              {app.motivation && (
+                                <div>
+                                  <p className="font-medium text-sm">{t("motivation")}:</p>
+                                  <p className="text-sm text-muted-foreground">{app.motivation}</p>
+                                </div>
+                              )}
+
+                              {app.status === "pending" && (
+                                <div className="flex gap-2">
+                                  <Button size="sm" onClick={() => updateApplicationStatus(app.id, "approved")}>
+                                    <CheckCircle className="h-4 w-4 mr-1" />
+                                    {t("approve")}
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    onClick={() => updateApplicationStatus(app.id, "rejected")}
+                                  >
+                                    <XCircle className="h-4 w-4 mr-1" />
+                                    {t("reject")}
+                                  </Button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+
+              {/* Committees: per-conference stats + auto assign */}
+              <TabsContent value="committees" className="space-y-6">
+                {publishedConferences.map((conf) => (
                   <Card key={conf.id}>
                     <CardHeader>
-                      <CardTitle className="text-2xl">{getConferenceName(conf)}</CardTitle>
+                      <CardTitle className="text-xl">{getConferenceName(conf)}</CardTitle>
                       <CardDescription className="flex items-center gap-2">
                         <Calendar className="w-4 h-4" />
-                        {getConferenceDate(conf)}
+                        {language === "ru" ? conf.date_ru : language === "kk" ? conf.date_kk : conf.date_en}
                         <span className="ml-2">
                           • {conf.applications.length} {t("applications")}
                         </span>
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      {conf.committees.length > 0 && (
-                        <div className="mb-6 p-4 bg-muted rounded-lg">
-                          <div className="flex items-center justify-between mb-3">
+                      {conf.committees.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">{t("no_data")}</p>
+                      ) : (
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between">
                             <h4 className="font-semibold flex items-center gap-2">
                               <Users className="w-4 h-4" />
                               {t("committee_stats")}
                             </h4>
-                            <Button size="sm" onClick={() => runAutoAssignment(conf.id)} variant="outline">
+                            <Button size="sm" variant="outline" onClick={() => runAutoAssignment(conf.id)}>
                               <Shuffle className="w-4 h-4 mr-2" />
                               {t("run_auto_assign")}
                             </Button>
                           </div>
-                          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                            {Object.entries(getCommitteeStats(conf)).map(([committeeId, stats]) => (
-                              <div key={committeeId} className="text-sm">
-                                <p className="font-medium">{stats.name}</p>
-                                <p className="text-muted-foreground">
-                                  {stats.assigned}/{stats.capacity} {t("filled")}
-                                </p>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {conf.applications.length === 0 ? (
-                        <p className="text-sm text-muted-foreground text-center py-8">{t("no_applications")}</p>
-                      ) : (
-                        <div className="space-y-4">
-                          {conf.applications.map((app) => (
-                            <Card key={app.id} className="border-2">
-                              <CardContent className="p-6">
-                                <div className="space-y-4">
-                                  <div className="flex items-start justify-between">
-                                    <div>
-                                      <h4 className="text-lg font-semibold">{app.full_name}</h4>
-                                      <div className="space-y-1 mt-2">
-                                        <p className="text-sm text-muted-foreground flex items-center gap-2">
-                                          <Mail className="w-4 h-4" />
-                                          {app.email}
-                                        </p>
-                                        <p className="text-sm text-muted-foreground flex items-center gap-2">
-                                          <Phone className="w-4 h-4" />
-                                          {app.phone}
-                                        </p>
-                                      </div>
-                                    </div>
-                                    <Badge
-                                      variant={
-                                        app.status === "approved"
-                                          ? "default"
-                                          : app.status === "rejected"
-                                            ? "destructive"
-                                            : "secondary"
-                                      }
-                                    >
-                                      {t(app.status)}
-                                    </Badge>
+                          <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+                            {Object.entries(getCommitteeStats(conf)).map(([committeeId, stats]) => {
+                              const pct = stats.capacity > 0 ? Math.round((stats.assigned / stats.capacity) * 100) : 0
+                              return (
+                                <div key={committeeId} className="rounded-lg border p-3">
+                                  <p className="font-medium text-sm truncate">{stats.name}</p>
+                                  <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-muted">
+                                    <div
+                                      className="h-full rounded-full bg-primary transition-all"
+                                      style={{ width: `${Math.min(pct, 100)}%` }}
+                                    />
                                   </div>
-
-                                  {/* Committee Choices */}
-                                  <div className="grid grid-cols-3 gap-2 text-sm">
-                                    <div>
-                                      <p className="font-medium text-xs text-muted-foreground">{t("primary_choice")}</p>
-                                      <p>{app.primary_committee?.name || "-"}</p>
-                                    </div>
-                                    <div>
-                                      <p className="font-medium text-xs text-muted-foreground">
-                                        {t("secondary_choice")}
-                                      </p>
-                                      <p>{app.secondary_committee?.name || "-"}</p>
-                                    </div>
-                                    <div>
-                                      <p className="font-medium text-xs text-muted-foreground">
-                                        {t("tertiary_choice")}
-                                      </p>
-                                      <p>{app.tertiary_committee?.name || "-"}</p>
-                                    </div>
-                                  </div>
-
-                                  {/* Assignment Info */}
-                                  {app.assigned_committee_id && (
-                                    <div className="p-3 bg-green-500/10 rounded-lg">
-                                      <p className="text-sm">
-                                        <span className="font-medium">{t("assigned_committee")}:</span>{" "}
-                                        {conf.committees.find((c) => c.id === app.assigned_committee_id)?.name}
-                                      </p>
-                                      {app.assigned_country && (
-                                        <p className="text-sm">
-                                          <span className="font-medium">{t("assigned_country")}:</span>{" "}
-                                          {app.assigned_country}
-                                        </p>
-                                      )}
-                                    </div>
-                                  )}
-
-                                  {/* Motivation */}
-                                  {app.motivation && (
-                                    <div>
-                                      <p className="font-medium text-sm">{t("motivation")}:</p>
-                                      <p className="text-sm text-muted-foreground">{app.motivation}</p>
-                                    </div>
-                                  )}
-
-                                  {/* Actions */}
-                                  <div className="flex gap-2">
-                                    {app.status === "pending" && (
-                                      <>
-                                        <Button
-                                          size="sm"
-                                          onClick={() => updateApplicationStatus(app.id, "approved")}
-                                          className="bg-green-600 hover:bg-green-700"
-                                        >
-                                          <CheckCircle className="h-4 w-4 mr-1" />
-                                          {t("approve")}
-                                        </Button>
-                                        <Button
-                                          size="sm"
-                                          variant="destructive"
-                                          onClick={() => updateApplicationStatus(app.id, "rejected")}
-                                        >
-                                          <XCircle className="h-4 w-4 mr-1" />
-                                          {t("reject")}
-                                        </Button>
-                                      </>
-                                    )}
-                                  </div>
+                                  <p className="mt-1 text-xs text-muted-foreground">
+                                    {stats.assigned}/{stats.capacity} {t("filled")} ({pct}%)
+                                  </p>
                                 </div>
-                              </CardContent>
-                            </Card>
-                          ))}
+                              )
+                            })}
+                          </div>
                         </div>
                       )}
                     </CardContent>
                   </Card>
                 ))}
-            </div>
+              </TabsContent>
+            </Tabs>
           )}
         </div>
       </main>
