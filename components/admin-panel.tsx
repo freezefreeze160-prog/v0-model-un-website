@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { RoleBadge } from "@/components/role-badge"
 import { Search } from "lucide-react"
-import { REGIONS } from "@/lib/roles"
+import { REGIONS, type UserRole } from "@/lib/roles"
 
 interface Profile {
   id: string
@@ -147,7 +147,7 @@ export default function AdminPanel() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <h3 className="font-semibold text-lg">{user.full_name}</h3>
-                    <RoleBadge role={user.role} region={user.school_id} />
+                    <RoleBadge role={user.role as UserRole} region={user.school_id} />
                   </div>
                   {user.bio && <p className="text-sm text-muted-foreground line-clamp-2">{user.bio}</p>}
                   {user.phone && <p className="text-sm text-muted-foreground mt-1">📞 {user.phone}</p>}

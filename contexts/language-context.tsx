@@ -3,10 +3,13 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 import { type Language, translations, type TranslationKey } from "@/lib/translations"
 
+// Allow known keys (with autocomplete) plus dynamic keys like `city_${slug}`.
+type TranslateKey = TranslationKey | (string & {})
+
 interface LanguageContextType {
   language: Language
   setLanguage: (lang: Language) => void
-  t: (key: TranslationKey) => string
+  t: (key: TranslateKey) => string
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
@@ -26,8 +29,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("lang", lang)
   }
 
-  const t = (key: TranslationKey): string => {
-    return translations[language][key] || key
+  const t = (key: TranslateKey): string => {
+    return (translations[language] as Record<string, string>)[key] || key
   }
 
   return <LanguageContext.Provider value={{ language, setLanguage, t }}>{children}</LanguageContext.Provider>

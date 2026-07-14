@@ -133,7 +133,7 @@ export default function CreateConferencePage() {
 
   function updateCommitteeField(index: number, field: keyof Committee, value: string | number | string[]) {
     const updated = [...committees]
-    updated[index][field] = value as any
+    ;(updated[index] as unknown as Record<string, unknown>)[field] = value
     setCommittees(updated)
   }
 

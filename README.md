@@ -1,30 +1,43 @@
-# Model UN website
+# MUN Kazakhstan
 
-*Automatically synced with your [v0.app](https://v0.app) deployments*
+The official Model United Nations platform for schools across Kazakhstan — conference registration, delegate applications, committee & country assignment, secretariat tools and news, in Kazakh, Russian and English.
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/freezefreeze160-2024s-projects/v0-model-un-website)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.app-black?style=for-the-badge)](https://v0.app/chat/g08HGaY1Hmq)
+## Tech stack
 
-## Overview
+- **Next.js** (App Router) + **React** + **TypeScript**
+- **Tailwind CSS v4** + **shadcn/ui** (Radix)
+- **Supabase** — PostgreSQL, Auth, Storage, Row Level Security
+- Deployed on **Vercel**
 
-This repository will stay in sync with your deployed chats on [v0.app](https://v0.app).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.app](https://v0.app).
+## Getting started
 
-## Deployment
+```bash
+pnpm install
+cp .env.example .env.local   # add your Supabase credentials
+pnpm dev
+```
 
-Your project is live at:
+Required environment variables (see `.env.example`):
 
-**[https://vercel.com/freezefreeze160-2024s-projects/v0-model-un-website](https://vercel.com/freezefreeze160-2024s-projects/v0-model-un-website)**
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `NEXT_PUBLIC_BASE_URL`
 
-## Build your app
+## Database
 
-Continue building your app on:
+The production database is a Supabase project. The authoritative schema lives in
+**[`docs/DATABASE.md`](docs/DATABASE.md)**; incremental changes are tracked as
+migrations in **`supabase/migrations/`**.
 
-**[https://v0.app/chat/g08HGaY1Hmq](https://v0.app/chat/g08HGaY1Hmq)**
+> ⚠️ The legacy `scripts/001_complete_setup.sql` did **not** match production and
+> has been retired — do not run it. See `docs/DATABASE.md`.
 
-## How It Works
+## Documentation
 
-1. Create and modify your project using [v0.app](https://v0.app)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+- [`docs/AUDIT.md`](docs/AUDIT.md) — codebase & database audit
+- [`docs/DATABASE.md`](docs/DATABASE.md) — current schema & migration guide
+
+## Branding
+
+The official product name is **MUN Kazakhstan**. Use it consistently across the
+UI, metadata, emails and documentation.

@@ -4,10 +4,14 @@ export interface UserProfile {
   id: string
   user_id: string
   full_name: string
-  email: string
+  email?: string
   phone?: string
   role: UserRole
   school_id?: number
+  region?: number
+  bio?: string
+  photo_url?: string
+  display_name?: string
   secretary_type?: "general" | "deputy"
   created_at: string
   updated_at: string
