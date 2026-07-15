@@ -6,6 +6,7 @@ import { createBrowserClient } from "@/lib/supabase/client"
 import { useLanguage } from "@/contexts/language-context"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
+import { LandingHero } from "@/components/landing-hero"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Calendar, Users, Award, ArrowRight, Clock } from "lucide-react"
@@ -153,54 +154,23 @@ export default function HomePage() {
       <Header />
 
       <main className="flex-1">
-        <section className="relative bg-gradient-to-br from-primary/5 via-primary/10 to-accent py-20 md:py-32 overflow-hidden">
-          <div className="absolute inset-0 bg-[url('/abstract-geometric-pattern.png')] opacity-5"></div>
-          <div className="container mx-auto px-4 relative z-10">
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div>
-                <div className="inline-block bg-primary text-primary-foreground px-6 py-2 rounded-full text-sm font-semibold mb-6">
-                  {t("conference_2025")}
-                </div>
-                <h2 className="text-4xl md:text-6xl font-bold mb-6 text-balance text-foreground leading-tight">
-                  {t("welcome")}
-                </h2>
-                <p className="text-lg md:text-xl mb-8 text-muted-foreground text-balance leading-relaxed">
-                  {t("hero_desc")}
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <Button asChild size="lg" className="text-base group">
-                    <Link href="/register">
-                      {t("apply_now")}
-                      <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                    </Link>
-                  </Button>
-                  <Button asChild size="lg" variant="outline" className="text-base bg-transparent">
-                    <Link href="/about">{t("learn_more")}</Link>
-                  </Button>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <img
-                  src="/student-laptop-work.png"
-                  alt="Student 1"
-                  className="rounded-2xl shadow-lg w-full h-64 object-cover"
-                />
-                <img
-                  src="/students-in-discussion.jpg"
-                  alt="Student 2"
-                  className="rounded-2xl shadow-lg w-full h-64 object-cover mt-8"
-                />
-                <img
-                  src="/student-presenting.jpg"
-                  alt="Student 3"
-                  className="rounded-2xl shadow-lg w-full h-64 object-cover -mt-8"
-                />
-                <img
-                  src="/model-un-conference.jpg"
-                  alt="Student 4"
-                  className="rounded-2xl shadow-lg w-full h-64 object-cover"
-                />
-              </div>
+        <LandingHero />
+
+        <section className="bg-background py-14">
+          <div className="container mx-auto px-4 text-center">
+            <p className="mx-auto mb-6 max-w-2xl text-balance text-lg text-muted-foreground md:text-xl">
+              {t("hero_desc")}
+            </p>
+            <div className="flex flex-col justify-center gap-4 sm:flex-row">
+              <Button asChild size="lg" className="text-base group">
+                <Link href="/register">
+                  {t("apply_now")}
+                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="outline" className="text-base bg-transparent">
+                <Link href="/about">{t("learn_more")}</Link>
+              </Button>
             </div>
           </div>
         </section>
