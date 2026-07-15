@@ -13,7 +13,6 @@ import ConferenceApprovals from "@/components/conference-approvals"
 import NewsManagement from "@/components/news-management"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { FOUNDER_EMAIL } from "@/lib/roles"
 
 export default function AdminPage() {
   const [loading, setLoading] = useState(true)
@@ -43,12 +42,6 @@ export default function AdminPage() {
 
       if (!user) {
         setError("not_logged_in")
-        setLoading(false)
-        return
-      }
-
-      if (user.email === FOUNDER_EMAIL) {
-        setIsFounder(true)
         setLoading(false)
         return
       }

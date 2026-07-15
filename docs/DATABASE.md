@@ -43,6 +43,22 @@ The app relies on ~18 PL/pgSQL functions (most `SECURITY DEFINER`), including:
 > currently executable by the `anon`/`authenticated` roles and some have a
 > mutable `search_path`. Hardening them is Phase B of the enhancement plan.
 
+## Migrations log
+
+| File | What it does | Applied to prod? |
+| --- | --- | --- |
+| `20260714_0001_role_based_founder.sql` | Removes the hardcoded founder email from all RLS policies; makes founder/admin access role-based; guarantees the existing founder keeps access; fixes the broken `profiles.id` predicate on `registrations`. | ⏳ pending |
+| `20260714_0002_function_and_rls_hardening.sql` | Pins `search_path` on 4 functions; revokes `anon` EXECUTE on privileged RPCs; tightens always-true INSERT policies; drops exact-duplicate policies. | ⏳ pending |
+
+**Apply order:** run `0001` **before** deploying the matching app code (so the
+founder's role is set first). Both are wrapped in transactions and are additive
+(no `DROP TABLE`, no data deletion).
+
+Still to do with a live connection (needs reading function bodies / testing):
+- Add internal caller-role checks inside the privileged `admin_*` functions.
+- Full `auth.uid()` → `(select auth.uid())` rewrite across policies (perf).
+- Enable **Leaked Password Protection** (Supabase → Auth → Policies toggle).
+
 ## Getting a fresh schema dump
 
 To regenerate an exact snapshot (requires the DB connection string):

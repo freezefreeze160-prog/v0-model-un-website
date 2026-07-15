@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
-import { isFounder, type UserRole } from "@/lib/roles"
+import type { UserRole } from "@/lib/roles"
 
 export async function loginAction(email: string, password: string) {
   try {
@@ -31,8 +31,9 @@ export async function signUpAction(
   try {
     const supabase = await createClient()
 
-    // Only founder email gets founder role, everyone else is participant
-    const actualRole: UserRole = isFounder(email) ? "founder" : "participant"
+    // Everyone signs up as a participant. Elevated roles (founder/admin/
+    // secretary) are granted in the database, never by email match.
+    const actualRole: UserRole = "participant"
 
     const { data, error } = await supabase.auth.signUp({
       email,

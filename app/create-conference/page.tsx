@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { REGIONS, isFounder } from "@/lib/roles"
+import { REGIONS } from "@/lib/roles"
 import { Home, Plus, X } from "lucide-react"
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
@@ -71,7 +71,6 @@ export default function CreateConferencePage() {
       const { data: profile } = await supabase.from("profiles").select("role").eq("user_id", user.id).single()
 
       const allowed =
-        isFounder(user.email) ||
         profile?.role === "founder" ||
         profile?.role === "general_secretary" ||
         profile?.role === "admin"

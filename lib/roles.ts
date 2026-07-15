@@ -40,56 +40,6 @@ export const regions = {
 
 export const REGIONS = regions
 
-export const VERIFICATION_CODES = {
-  FOUNDER: "Founder1",
-  ADMIN_PREFIX: "Administrator",
-  GENERAL_SECRETARY_PREFIX: "General-Secretary",
-  DEPUTY_SECRETARY_PREFIX: "Deputy-Secretary",
-} as const
-
-export const FOUNDER_EMAIL = "speed_777_speed@mail.ru"
-
-export function validateVerificationCode(code: string): {
-  valid: boolean
-  role?: "founder" | "admin" | "general_secretary" | "deputy"
-  schoolId?: number
-  secretaryType?: "general" | "deputy"
-} {
-  // Founder verification
-  if (code === VERIFICATION_CODES.FOUNDER) {
-    return { valid: true, role: "founder" }
-  }
-
-  // Admin: Administrator{N} where N is school ID
-  if (code.startsWith(VERIFICATION_CODES.ADMIN_PREFIX)) {
-    const schoolIdStr = code.substring(VERIFICATION_CODES.ADMIN_PREFIX.length)
-    const schoolId = Number.parseInt(schoolIdStr, 10)
-    if (!Number.isNaN(schoolId) && schoolId > 0) {
-      return { valid: true, role: "admin", schoolId }
-    }
-  }
-
-  // General Secretary: General-Secretary{N}
-  if (code.startsWith(VERIFICATION_CODES.GENERAL_SECRETARY_PREFIX)) {
-    const schoolIdStr = code.substring(VERIFICATION_CODES.GENERAL_SECRETARY_PREFIX.length)
-    const schoolId = Number.parseInt(schoolIdStr, 10)
-    if (!Number.isNaN(schoolId) && schoolId > 0) {
-      return { valid: true, role: "general_secretary", schoolId, secretaryType: "general" }
-    }
-  }
-
-  // Deputy Secretary: Deputy-Secretary{N}
-  if (code.startsWith(VERIFICATION_CODES.DEPUTY_SECRETARY_PREFIX)) {
-    const schoolIdStr = code.substring(VERIFICATION_CODES.DEPUTY_SECRETARY_PREFIX.length)
-    const schoolId = Number.parseInt(schoolIdStr, 10)
-    if (!Number.isNaN(schoolId) && schoolId > 0) {
-      return { valid: true, role: "deputy", schoolId, secretaryType: "deputy" }
-    }
-  }
-
-  return { valid: false }
-}
-
 export function getRoleBadgeColor(role: UserRole): string {
   switch (role) {
     case "founder":
@@ -116,8 +66,13 @@ export function getRoleLabel(role: UserRole, language: "ru" | "kk" | "en"): stri
   return labels[role][language]
 }
 
-export function isFounder(email: string | undefined): boolean {
-  return email === FOUNDER_EMAIL
+export function isFounder(role: UserRole | string | undefined): boolean {
+  return role === "founder"
+}
+
+/** Roles that can access the secretariat/management surfaces. */
+export function canManageConferences(role: UserRole | string | undefined): boolean {
+  return role === "founder" || role === "admin" || role === "general_secretary"
 }
 
 export function canCreateNews(role: UserRole): boolean {

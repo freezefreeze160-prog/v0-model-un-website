@@ -23,17 +23,17 @@ export function Header() {
         data: { user },
       } = await supabase.auth.getUser()
       setUser(user)
-      if (user?.email === "speed_777_speed@mail.ru") {
-        setIsFounder(true)
-        setCanManageConferences(true)
-      }
 
       if (user) {
         const { data: profileData } = await supabase.from("profiles").select("role").eq("user_id", user.id).single()
-
-        if (profileData?.role === "general_secretary" || profileData?.role === "admin") {
-          setCanManageConferences(true)
-        }
+        const role = profileData?.role
+        setIsFounder(role === "founder")
+        setCanManageConferences(
+          role === "founder" || role === "general_secretary" || role === "admin",
+        )
+      } else {
+        setIsFounder(false)
+        setCanManageConferences(false)
       }
     }
     getUser()
@@ -42,25 +42,21 @@ export function Header() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setUser(session?.user ?? null)
-      if (session?.user?.email === "speed_777_speed@mail.ru") {
-        setIsFounder(true)
-        setCanManageConferences(true)
+
+      if (session?.user) {
+        const { data: profileData } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("user_id", session.user.id)
+          .single()
+        const role = profileData?.role
+        setIsFounder(role === "founder")
+        setCanManageConferences(
+          role === "founder" || role === "general_secretary" || role === "admin",
+        )
       } else {
         setIsFounder(false)
-
-        if (session?.user) {
-          const { data: profileData } = await supabase
-            .from("profiles")
-            .select("role")
-            .eq("user_id", session.user.id)
-            .single()
-
-          if (profileData?.role === "general_secretary" || profileData?.role === "admin") {
-            setCanManageConferences(true)
-          } else {
-            setCanManageConferences(false)
-          }
-        }
+        setCanManageConferences(false)
       }
     })
 
